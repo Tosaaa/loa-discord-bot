@@ -2,7 +2,7 @@ import asyncio
 import discord
 
 client = discord.Client(intents=discord.Intents.all())
-token = "" # available on raspberry pi
+token = "MTE5MTc0ODgzNTM1ODI4MTg3OA.GfERBw.gx1QCC1sUyNfMCAb7edb44uOTpQIhSHHCc5zzo" # available on raspberry pi
 
 @client.event
 async def on_ready():
