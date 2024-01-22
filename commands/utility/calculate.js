@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +24,11 @@ module.exports = {
         const equalValue = (auctionValue * 0.95) * (divider-1) / divider;
         const preemptionValue = equalValue / 1.1;
 
-        const res = `공평: ${equalValue.toFixed(2)}, \n선점: ${preemptionValue.toFixed(2)}`;
-        await interaction.reply(res);
+        const res = `공평: ${equalValue.toFixed(2)} \n선점: ${preemptionValue.toFixed(2)}`;
+
+        const response = await interaction.reply({
+            content: res, 
+            ephemeral: true
+        });
     },
-}
+};

@@ -1,6 +1,3 @@
-// 아래 링크부터 이어서!
-// https://discordjs.guide/additional-features/cooldowns.html#resulting-code
-
 // Require the necessary discord.js classes
 const fs = require('node:fs');
 const path = require('node:path');
@@ -11,6 +8,9 @@ const { token } = require('./config.json');
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
     ] 
 });
 
@@ -45,6 +45,25 @@ for (const file of eventFiles) {
 	} else {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
+}
+
+//initialize raid
+client.raid = new Collection();
+client.raid.set("쿠크", new Set());
+client.raid.set("노양겔", new Set());
+client.raid.set("하양겔", new Set());
+client.raid.set("노칸", new Set());
+client.raid.set("하칸", new Set());
+client.raid.set("상노탑", new Set());
+client.raid.set("노멘", new Set());
+client.raid.set("상하탑", new Set());
+client.raid.set("하멘", new Set());
+
+client.checkPlayerInRaid = (username, raid) => {
+	if (client.raid.get(raid).has(username))
+		return true;
+	else 
+		return false;
 }
 
 // Log in to Discord with your client's token
