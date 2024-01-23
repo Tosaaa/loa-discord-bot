@@ -1,0 +1,49 @@
+{
+    "raidList": [
+        {
+            "raidName": "쿠크",
+            "itemLevel": 1475,
+            "peopleCount": 4
+        },
+        {
+            "raidName": "노양겔",
+            "itemLevel": 1540,
+            "peopleCount": 4
+        },
+        {
+            "raidName": "하양겔",
+            "itemLevel": 1580,
+            "peopleCount": 4
+        },
+        {
+            "raidName": "노칸",
+            "itemLevel": 1580,
+            "peopleCount": 8
+        },
+        {
+            "raidName": "하칸",
+            "itemLevel": 1600,
+            "peopleCount": 8
+        },
+        {
+            "raidName": "상노탑",
+            "itemLevel": 1610,
+            "peopleCount": 4
+        },
+        {
+            "raidName": "노멘",
+            "itemLevel": 1610,
+            "peopleCount": 8
+        },
+        {
+            "raidName": "상하탑",
+            "itemLevel": 1620,
+            "peopleCount": 4
+        },
+        {
+            "raidName": "하멘",
+            "itemLevel": 1630,
+            "peopleCount": 8
+        }
+    ]
+}

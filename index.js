@@ -48,23 +48,26 @@ for (const file of eventFiles) {
 }
 
 //initialize raid
-client.raid = new Collection();
-client.raid.set("쿠크", new Set());
-client.raid.set("노양겔", new Set());
-client.raid.set("하양겔", new Set());
-client.raid.set("노칸", new Set());
-client.raid.set("하칸", new Set());
-client.raid.set("상노탑", new Set());
-client.raid.set("노멘", new Set());
-client.raid.set("상하탑", new Set());
-client.raid.set("하멘", new Set());
+///////////////////////////////////////////////
+client.raidParticipant = new Collection();
 
-client.checkPlayerInRaid = (username, raid) => {
-	if (client.raid.get(raid).has(username))
+const { raidList } = require('./environment/raid.json');
+raidList.forEach(raid => {
+	client.raidParticipant.set(raid.raidName, new Collection());
+});
+
+client.isPlayerRaidParticipant = (playerName, raidName) => {
+	if (client.raidParticipant.get(raidName).has(playerName))
 		return true;
 	else 
 		return false;
 }
+///////////////////////////////////////////////
+
+//initialize player sync
+///////////////////////////////////////////////
+client.characterSync = new Collection();
+///////////////////////////////////////////////
 
 // Log in to Discord with your client's token
 client.login(token);
