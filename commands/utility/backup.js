@@ -1,3 +1,5 @@
+//TODO: json파일에 데이터 백업
+
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
@@ -15,7 +17,7 @@ module.exports = {
         }
         const client = interaction.client;
         console.log("********************[BACKUP_BEGIN]********************")
-        console.log("raidParticipant: \n", JSON.stringify(interaction.client.raidParticipant));
+        console.log("raidParticipant: \n", interaction.client.raidParticipant);
         console.log("characterSync: \n", interaction.client.characterSync);
         console.log("********************[BACKUP_END]********************")
 
