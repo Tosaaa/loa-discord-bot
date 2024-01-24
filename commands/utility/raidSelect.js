@@ -29,13 +29,22 @@ module.exports = {
         }
 
         const selectedRaid = JSON.parse(interaction.options.getString("레이드종류"));
+        const possibleCharacterList = characterList.filter(character => character[2] >= selectedRaid.itemLevel);
+        if (possibleCharacterList.length === 0) {
+            await interaction.reply({
+                content: "해당 레이드를 갈 수 있는 캐릭터가 없습니다.",
+                ephemeral: true
+            });
+            return;
+        }
+
         const playerSelection = new StringSelectMenuBuilder()
             .setCustomId('playerSelection')
             .setPlaceholder('참여 캐릭터 선택')
             .setMinValues(0)
-            .setMaxValues(characterList.length)
+            .setMaxValues(possibleCharacterList.length)
             .addOptions(
-                ...(characterList.map(character => {
+                ...(possibleCharacterList.map(character => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(character[0]+"/"+character[1]+"/"+character[2])
                         .setValue(JSON.stringify(character))
