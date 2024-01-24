@@ -49,15 +49,16 @@ for (const file of eventFiles) {
 
 //initialize raid
 ///////////////////////////////////////////////
-client.raidParticipant = new Collection();
+client.raidParticipant = {};
 
-const { raidList } = require('./environment/raid.json');
+const { raidList } = require('./environment/raidList.json');
 raidList.forEach(raid => {
-	client.raidParticipant.set(raid.raidName, new Collection());
+	client.raidParticipant[raid.raidName] = {};
 });
 
-client.isPlayerRaidParticipant = (playerName, raidName) => {
-	if (client.raidParticipant.get(raidName).has(playerName))
+client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
+	if (client.raidParticipant[raidName][userName] &&
+		client.raidParticipant[raidName][userName].find(x => x[0] === playerName))
 		return true;
 	else 
 		return false;
@@ -66,7 +67,7 @@ client.isPlayerRaidParticipant = (playerName, raidName) => {
 
 //initialize player sync
 ///////////////////////////////////////////////
-client.characterSync = new Collection();
+client.characterSync = {};
 ///////////////////////////////////////////////
 
 // Log in to Discord with your client's token

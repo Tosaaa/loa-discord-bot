@@ -19,13 +19,13 @@ module.exports = {
                 ephemeral: true
             });
         } else {
-            interaction.client.characterSync.set(interaction.user.username, characterList);
+            interaction.client.characterSync[interaction.user.username] = characterList;
             await interaction.reply({
                 content: "캐릭터 연동 완료!",
                 ephemeral: true
             });
         }
-        console.log(interaction.client.characterSync);
+        // console.log(interaction.client.characterSync);
     },
 
     async fetchCharacters(playerName) {
