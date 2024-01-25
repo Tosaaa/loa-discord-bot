@@ -27,6 +27,10 @@ for (const folder of commandFolders) {
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(token);
 
+// rest.delete(Routes.applicationGuildCommand(clientId, guildId, 'ping'))
+// 	.then(() => console.log('Successfully deleted guild command'))
+// 	.catch(console.error);
+
 // and deploy your commands!
 (async () => {
 	try {
@@ -45,3 +49,4 @@ const rest = new REST().setToken(token);
 		console.error(error);
 	}
 })();
+

@@ -8,7 +8,7 @@ module.exports = {
         .setDescription('이번 주 레이드 현황'),
     
     async execute(interaction) {
-        let result = `----------이번주 레이드 현황----------\n`;
+        let result = `----------이번 주 레이드 현황----------\n`;
         for (const raidName of Object.keys(interaction.client.raidParticipant)) {
             result += `[${raidName}]\n`;
             for (const userName of Object.keys(interaction.client.raidParticipant[raidName])) {

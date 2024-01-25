@@ -1,5 +1,3 @@
-//TODO: json파일에 데이터 백업
-
 const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
