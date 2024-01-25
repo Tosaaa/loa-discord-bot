@@ -48,14 +48,17 @@ for (const file of eventFiles) {
 }
 
 //initialize raid
-///////////////////////////////////////////////
 client.raidParticipant = {};
-
 const { raidList } = require('./environment/raidList.json');
 raidList.forEach(raid => {
 	client.raidParticipant[raid.raidName] = {};
 });
 
+//initialize player sync
+client.characterSync = {};
+
+/********** functions **********/
+// checks if playerName of userName participates raidName
 client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 	if (client.raidParticipant[raidName][userName] &&
 		client.raidParticipant[raidName][userName].find(x => x[0] === playerName))
@@ -63,12 +66,17 @@ client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 	else 
 		return false;
 }
-///////////////////////////////////////////////
 
-//initialize player sync
-///////////////////////////////////////////////
-client.characterSync = {};
-///////////////////////////////////////////////
+client.dataBackup = () => {
+	fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
+	fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
+}
+
+client.dataLoad = () => {
+	client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
+	client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
+}
+/********** functions **********/
 
 // Log in to Discord with your client's token
 client.login(token);

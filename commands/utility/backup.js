@@ -17,8 +17,7 @@ module.exports = {
             return;
         }
 
-        fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(interaction.client.raidParticipant));
-        fs.writeFileSync('DB/characterSync.json', JSON.stringify(interaction.client.characterSync));
+        interaction.client.dataBackup();
 
         await interaction.reply({
             content: "데이터 백업 완료!",

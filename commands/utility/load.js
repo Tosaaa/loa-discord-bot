@@ -17,8 +17,7 @@ module.exports = {
             return;
         }
 
-        interaction.client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
-        interaction.client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
+        interaction.client.dataLoad();
 
         await interaction.reply({
             content: "데이터 로드 완료!",
