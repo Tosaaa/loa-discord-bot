@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
+const { emoji } = require('./DB/emoji.json');
+
 
 // Create a new client instance
 const client = new Client({ 
@@ -86,6 +88,15 @@ client.dataLoad = () => {
 		fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
 	}
 	
+}
+
+client.getEmoji = (emojiName) => {
+	let emojiString = emoji[emojiName];
+	if (!emojiString) {
+		// if there's no matching emoji, return crycon
+		return "1131567145030004750";
+	}
+	return emojiString;
 }
 /********** functions **********/
 

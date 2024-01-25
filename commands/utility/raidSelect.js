@@ -48,7 +48,7 @@ module.exports = {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(character[0]+"/"+character[1]+"/"+character[2])
                         .setValue(JSON.stringify(character))
-                        .setEmoji('😀') // 나중에 raid.json에 custom emoji id 추가
+                        .setEmoji(interaction.client.getEmoji(character[1]))
                         .setDefault(interaction.client.isPlayerRaidParticipant(interaction.user.username, character[0], selectedRaid.raidName));
                 }))
             );
