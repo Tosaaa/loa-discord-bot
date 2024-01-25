@@ -47,14 +47,14 @@ for (const file of eventFiles) {
 	}
 }
 
-//initialize raid
+// Initialize raidParticipant
 client.raidParticipant = {};
 const { raidList } = require('./environment/raidList.json');
 raidList.forEach(raid => {
 	client.raidParticipant[raid.raidName] = {};
 });
 
-//initialize player sync
+// Initialize characterSync
 client.characterSync = {};
 
 /********** functions **********/
@@ -73,10 +73,24 @@ client.dataBackup = () => {
 }
 
 client.dataLoad = () => {
-	client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
-	client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
+	// when json file doesn't exist or is not valid, create new one
+	try {
+		client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
+	} catch (e) {
+		fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
+	}
+	
+	try {
+		client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
+	} catch (e) {
+		fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
+	}
+	
 }
 /********** functions **********/
+
+// Initialize data
+client.dataLoad();
 
 // Log in to Discord with your client's token
 client.login(token);

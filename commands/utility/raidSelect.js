@@ -70,7 +70,7 @@ module.exports = {
             if (confirmation.customId === 'playerSelection') {
                 const selectedPlayers = confirmation.values.map(v => JSON.parse(v));
                 interaction.client.raidParticipant[selectedRaid.raidName][interaction.user.username] = selectedPlayers;
-
+                interaction.client.dataBackup();
                 await confirmation.update({
                     content: "저장 완료!",
                     components: []

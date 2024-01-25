@@ -20,6 +20,7 @@ module.exports = {
             });
         } else {
             interaction.client.characterSync[interaction.user.username] = characterList;
+            interaction.client.dataBackup();
             await interaction.reply({
                 content: "캐릭터 연동 완료!",
                 ephemeral: true
