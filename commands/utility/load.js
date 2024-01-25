@@ -1,6 +1,7 @@
 //TODO: json파일에서 백업된 데이터 로드
 
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,14 +16,12 @@ module.exports = {
             });
             return;
         }
-        const client = interaction.client;
-        console.log("********************[LOAD_BEGIN]********************")
-        console.log("raidParticipant: \n", interaction.client.raidParticipant);
-        console.log("characterSync: \n", interaction.client.characterSync);
-        console.log("********************[LOAD_END]********************")
+
+        interaction.client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
+        interaction.client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
 
         await interaction.reply({
-            content: "콘솔에 출력되었음!",
+            content: "데이터 로드 완료!",
             ephemeral: true
         });
     },

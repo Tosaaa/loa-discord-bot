@@ -1,6 +1,7 @@
 //TODO: json파일에 데이터 백업
 
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,14 +16,12 @@ module.exports = {
             });
             return;
         }
-        const client = interaction.client;
-        console.log("********************[BACKUP_BEGIN]********************")
-        console.log("raidParticipant: \n", interaction.client.raidParticipant);
-        console.log("characterSync: \n", interaction.client.characterSync);
-        console.log("********************[BACKUP_END]********************")
+
+        fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(interaction.client.raidParticipant));
+        fs.writeFileSync('DB/characterSync.json', JSON.stringify(interaction.client.characterSync));
 
         await interaction.reply({
-            content: "콘솔에 출력되었음!",
+            content: "데이터 백업 완료!",
             ephemeral: true
         });
     },
