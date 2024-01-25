@@ -5,7 +5,6 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
 
-
 // Create a new client instance
 const client = new Client({ 
     intents: [
@@ -49,17 +48,25 @@ for (const file of eventFiles) {
 	}
 }
 
-// Initialize raidParticipant
-client.raidParticipant = {};
-const { raidList } = require('./environment/raidList.json');
-raidList.forEach(raid => {
-	client.raidParticipant[raid.raidName] = {};
-});
-
-// Initialize characterSync
-client.characterSync = {};
-
 /********** functions **********/
+client.init = () => {
+	client.initRaidParticipant();
+	client.initCharacterSync();
+	client.dataLoad();
+}
+
+client.initRaidParticipant = () => {
+	client.raidParticipant = {};
+	const { raidList } = require('./environment/raidList.json');
+	raidList.forEach(raid => {
+		client.raidParticipant[raid.raidName] = {};
+	});
+}
+
+client.initCharacterSync = () => {
+	client.characterSync = {};
+}
+
 // checks if playerName of userName participates raidName
 client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 	if (client.raidParticipant[raidName][userName] &&
@@ -100,8 +107,8 @@ client.getEmoji = (emojiName) => {
 }
 /********** functions **********/
 
-// Initialize data
-client.dataLoad();
+// Initialize
+client.init();
 
 // Log in to Discord with your client's token
 client.login(token);
