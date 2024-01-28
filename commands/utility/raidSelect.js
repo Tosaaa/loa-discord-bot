@@ -1,6 +1,3 @@
-//TODO: 이모지 로아 코덱스에서 받아서 설정해보기, 몇 마리 참여하는지? 어떤 캐릭으로 가는지? 등등 선택 가능하게? 
-// 본인 대표 캐릭터 닉네임 지정하게 해야할 듯..
-
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } = require('discord.js');
 const { raidList } = require('../../environment/raidList.json');
 
@@ -69,7 +66,13 @@ module.exports = {
 
             if (confirmation.customId === 'playerSelection') {
                 const selectedPlayers = confirmation.values.map(v => JSON.parse(v));
-                interaction.client.raidParticipant[selectedRaid.raidName][interaction.user.username] = selectedPlayers;
+
+                // delete entry when empty
+                if (selectedPlayers.length === 0) {
+                    delete interaction.client.raidParticipant[selectedRaid.raidName][interaction.user.username];
+                } else {
+                    interaction.client.raidParticipant[selectedRaid.raidName][interaction.user.username] = selectedPlayers;
+                }
                 interaction.client.dataBackup();
                 await confirmation.update({
                     content: "저장 완료!",
@@ -80,7 +83,6 @@ module.exports = {
                 await interaction.deleteReply();
             }
         } catch (e) {
-            console.log(e);
             await interaction.editReply({ content: '입력 시간 초과 (1분) 또는 에러 발생', components: [] });
         }
     },

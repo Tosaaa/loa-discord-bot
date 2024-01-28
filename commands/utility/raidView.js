@@ -1,5 +1,3 @@
-//TODO: 현재 레이드 참여 현황 출력
-
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
@@ -10,6 +8,9 @@ module.exports = {
     async execute(interaction) {
         let result = `----------이번 주 레이드 현황----------\n`;
         for (const raidName of Object.keys(interaction.client.raidParticipant)) {
+            // skip raid when nobody participates
+            if (Object.keys(interaction.client.raidParticipant[raidName]).length === 0) continue;
+
             result += `[${raidName}]\n`;
             for (const userName of Object.keys(interaction.client.raidParticipant[raidName])) {
                 result += `${userName}: `;
