@@ -4,7 +4,7 @@ const { API_KEY } = require('../../config.json');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('캐릭터연동')
-        .setDescription('디스코드에 본인 캐릭터 연동')
+        .setDescription('본인 캐릭터 연동 (부계정 있으면 둘 다 입력)')
         .addStringOption(option => 
             option.setName("캐릭터닉네임")
                 .setDescription("캐릭터 닉네임")
