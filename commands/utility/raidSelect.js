@@ -73,6 +73,7 @@ module.exports = {
                 } else {
                     interaction.client.raidParticipant[selectedRaid.raidName][interaction.user.username] = selectedPlayers;
                 }
+                interaction.client.updateRole(interaction);
                 interaction.client.dataBackup();
                 await confirmation.update({
                     content: "저장 완료!",

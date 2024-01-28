@@ -6,6 +6,7 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
+const { raidList } = require('./environment/raidList.json');
 
 // Create a new client instance
 const client = new Client({ 
@@ -59,7 +60,6 @@ client.init = () => {
 
 client.initRaidParticipant = () => {
 	client.raidParticipant = {};
-	const { raidList } = require('./environment/raidList.json');
 	raidList.forEach(raid => {
 		client.raidParticipant[raid.raidName] = {};
 	});
@@ -106,6 +106,26 @@ client.getEmoji = (emojiName) => {
 		return "1131567145030004750";
 	}
 	return emojiString;
+}
+
+
+client.updateRole = async (interaction) =>  {
+	const allMembersMap = await interaction.guild.members.fetch();
+	const allMembers = [...allMembersMap.values()];
+	const allRolesMap = await interaction.guild.roles.fetch();
+	const allRoles = [...allRolesMap.values()];
+
+		raidList.forEach(raid => {
+			const raidRole = allRoles.find(role => role.name === raid.raidName);
+			if (!raidRole) return;
+			const member = allMembers.find(member => member.user.username === interaction.user.username);
+
+			if (client.raidParticipant[raid.raidName][interaction.user.username]) {
+				member.roles.add(raidRole);
+			} else {
+				member.roles.remove(raidRole);
+			}
+		});
 }
 /********** functions **********/
 
