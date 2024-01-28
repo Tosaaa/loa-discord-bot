@@ -11,6 +11,16 @@
             "peopleCount": 4
         },
         {
+            "raidName": "하12노3",
+            "itemLevel": 1540,
+            "peopleCount": 8
+        },
+        {
+            "raidName": "하브13",
+            "itemLevel": 1550,
+            "peopleCount": 8
+        },
+        {
             "raidName": "하양겔",
             "itemLevel": 1580,
             "peopleCount": 4

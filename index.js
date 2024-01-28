@@ -87,6 +87,15 @@ client.dataLoad = () => {
 	// when json file doesn't exist or is not valid, create new one
 	try {
 		client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
+
+		// When new raid is added to raidList.json, set the value of the new raid with empty object
+		// TODO: should handle when raid is deleted from raidList.json
+		raidList.forEach(raid => {
+			if (!Object.keys(client.raidParticipant).includes(raid.raidName)) {
+				client.raidParticipant[raid.raidName] = {};
+			}
+		});
+		
 	} catch (e) {
 		fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
 	}
