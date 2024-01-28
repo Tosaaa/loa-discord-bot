@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/node
 
 // Require the necessary discord.js classes
 const fs = require('node:fs');
