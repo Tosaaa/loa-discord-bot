@@ -51,7 +51,17 @@
             "peopleCount": 4
         },
         {
+            "raidName": "노키드나",
+            "itemLevel": 1620,
+            "peopleCount": 8
+        },
+        {
             "raidName": "하멘",
+            "itemLevel": 1630,
+            "peopleCount": 8
+        },
+        {
+            "raidName": "하키드나",
             "itemLevel": 1630,
             "peopleCount": 8
         }
