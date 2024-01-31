@@ -72,6 +72,7 @@ client.initCharacterSync = () => {
 
 client.initSchedule = () => {
 	client.schedule = {};
+	setInterval(client.checkTime, 5000);
 }
 
 // checks if playerName of userName participates raidName
@@ -154,20 +155,20 @@ client.checkTime = () => {
 	let machineDateObj = new Date();
     let machineDate = machineDateObj.toLocaleDateString();
     let machineMinutes = machineDateObj.getMinutes();
-    let machineHours = machineDateObj.getHours();
+    let machineHours = machineDateObj.getHours() + 9;
 	let newMachineDateObj = new Date(`${machineDate} ${machineHours}:${machineMinutes}`);
 	let machineTime = newMachineDateObj.getTime();
 
 	let foundSchedule  = [];
-	for (const s of Object.keys(client.schedule)) {
-		if (schedule[s].rawTime === machineTime) {
-		    console.log(s + " found!: " + schedule[s].parsedTime);
-			foundSchedule.push(s);
+	for (const scheduleKey of Object.keys(client.schedule)) {
+		if (client.schedule[scheduleKey].rawTime <= machineTime) {
+		    console.log(scheduleKey + " found!: " + client.schedule[scheduleKey].parsedTime);
+			foundSchedule.push(scheduleKey);
 		}
 	}
 
-	for (const s of foundSchedule) {
-		delete client.schedule[s];
+	for (const scheduleKey of foundSchedule) {
+		delete client.schedule[scheduleKey];
 	}
 	client.dataBackup();
 }

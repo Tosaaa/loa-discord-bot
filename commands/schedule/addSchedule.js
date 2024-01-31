@@ -53,7 +53,7 @@ module.exports = {
             return;
         }
 
-        client.schedule[`${selectedRaid.raidName}${date.getTime()}`] = 
+        client.schedule[`${selectedRaid.raidName}|${date.getTime()}`] = 
         {
             "rawTime": date.getTime(),
             "parsedTime": `${date.toLocaleString()}`

@@ -24,7 +24,7 @@ module.exports = {
             .addOptions(
                 ...(scheduleKeyList.map(scheduleKey => {
                     return new StringSelectMenuOptionBuilder()
-                        .setLabel(`${scheduleKey}: ${client.schedule[scheduleKey].parsedTime}`)
+                        .setLabel(`${scheduleKey.split('|')[0]}: ${client.schedule[scheduleKey].parsedTime}`)
                         .setValue(String(client.schedule[scheduleKey].rawTime))
                 }))
             );
@@ -53,7 +53,6 @@ module.exports = {
                         }
                     }
                 }
-                console.log(foundSchedule);
 
                 for (const s of foundSchedule) {
                     delete client.schedule[s];
