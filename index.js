@@ -55,6 +55,7 @@ for (const file of eventFiles) {
 client.init = () => {
 	client.initRaidParticipant();
 	client.initCharacterSync();
+	client.initSchedule();
 	client.dataLoad();
 }
 
@@ -69,6 +70,10 @@ client.initCharacterSync = () => {
 	client.characterSync = {};
 }
 
+client.initSchedule = () => {
+	client.schedule = {};
+}
+
 // checks if playerName of userName participates raidName
 client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 	if (client.raidParticipant[raidName][userName] &&
@@ -81,6 +86,7 @@ client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 client.dataBackup = () => {
 	fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
 	fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
+	fs.writeFileSync('DB/schedule.json', JSON.stringify(client.schedule));
 }
 
 client.dataLoad = () => {
@@ -106,6 +112,12 @@ client.dataLoad = () => {
 		fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
 	}
 	
+
+	try {
+		client.schedule = JSON.parse(fs.readFileSync('DB/schedule.json').toString());
+	} catch (e) {
+		fs.writeFileSync('DB/schedule.json', JSON.stringify(client.schedule));
+	}
 }
 
 client.getEmoji = (emojiName) => {
@@ -135,6 +147,29 @@ client.updateRole = async (interaction) =>  {
 				member.roles.remove(raidRole);
 			}
 		});
+}
+
+client.checkTime = () => {
+	// IMPORTANT: github codespace follow utc+0 timezone, but raspberry pi timezone is set to utc+9
+	let machineDateObj = new Date();
+    let machineDate = machineDateObj.toLocaleDateString();
+    let machineMinutes = machineDateObj.getMinutes();
+    let machineHours = machineDateObj.getHours();
+	let newMachineDateObj = new Date(`${machineDate} ${machineHours}:${machineMinutes}`);
+	let machineTime = newMachineDateObj.getTime();
+
+	let foundSchedule  = [];
+	for (const s of Object.keys(client.schedule)) {
+		if (schedule[s].rawTime === machineTime) {
+		    console.log(s + " found!: " + schedule[s].parsedTime);
+			foundSchedule.push(s);
+		}
+	}
+
+	for (const s of foundSchedule) {
+		delete client.schedule[s];
+	}
+	client.dataBackup();
 }
 /********** functions **********/
 
