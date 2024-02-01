@@ -58,6 +58,8 @@ client.init = () => {
 	client.initCharacterSync();
 	client.initSchedule();
 	client.dataLoad();
+	client.updateRole();
+	console.log("Bot initialized!");
 }
 
 client.initRaidParticipant = () => {
