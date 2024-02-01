@@ -1,19 +1,33 @@
 const { SlashCommandBuilder, embedLength } = require('discord.js');
+const { raidList } = require('../../environment/raidList.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('레이드현황')
-        .setDescription('이번 주 레이드 현황'),
+        .setDescription('이번 주 레이드 현황')
+        .addStringOption(option => 
+            option.setName("레이드종류")
+                .setDescription("레이드 종류를 입력해주세요")
+                .setRequired(true)
+                .addChoices(
+                    ...(raidList.map(raid => {
+                        return {name: raid.raidName, value: JSON.stringify(raid)};
+                    })),
+                )),
     
     async execute(interaction) {
+        const selectedRaid = JSON.parse(interaction.options.getString("레이드종류"));
+
         let result = `**[이번 주 레이드 현황]**\n`;
         let embedList = [];
 
-        for (const raidName of Object.keys(interaction.client.raidParticipant)) {
-            // skip raid when nobody participates
-            if (Object.keys(interaction.client.raidParticipant[raidName]).length === 0) continue;
-            embedList.push(this.createEmbedByRaidName(interaction, raidName));
-        }
+        embedList.push(this.createEmbedByRaidName(interaction, selectedRaid.raidName));
+        // DEPRECATED (used when this command printed all raid)
+        // for (const raidName of Object.keys(interaction.client.raidParticipant)) {
+        //     // skip raid when nobody participates
+        //     if (Object.keys(interaction.client.raidParticipant[raidName]).length === 0) continue;
+        //     embedList.push(this.createEmbedByRaidName(interaction, raidName));
+        // }
 
         await interaction.reply({
             content: result,
