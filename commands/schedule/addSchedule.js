@@ -68,12 +68,8 @@ module.exports = {
     },
 
     parseInput(YYYY, MM, DD, hh, mm) {
-        let result;
-        try {
-            result = new Date(`${YYYY}/${MM}/${DD} ${hh}:${mm}`);
-        } catch(e) {
-            result = null;
-        }
+        let result = new Date(`${YYYY}/${MM}/${DD} ${hh}:${mm}`);
+        if (result == 'Invalid Date') result = null;
         return result;
     }
 }
