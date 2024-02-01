@@ -156,7 +156,11 @@ client.checkTime = () => {
 	let machineDateObj = new Date();
     let machineDate = machineDateObj.toLocaleDateString();
     let machineMinutes = machineDateObj.getMinutes();
-    let machineHours = machineDateObj.getHours() + 9;
+    let machineHours = machineDateObj.getHours();
+
+	// uncomment in github codespace
+	// machineHours += 9;
+
 	let newMachineDateObj = new Date(`${machineDate} ${machineHours}:${machineMinutes}`);
 	let machineTime = newMachineDateObj.getTime();
 
