@@ -171,7 +171,7 @@ client.checkTime = () => {
 			// const channel = client.channels.cache.get(channelIdLaboratory); << Laboratory channel id
 			const roleName = `${scheduleKey.split('|')[0]}`;
 			const roleId = client.guilds.cache.get(guildId).roles.cache.find(r => r.name === roleName) ?? roleName;
-			channel.send(`[<${roleId}>]: ${client.schedule[scheduleKey].parsedTime} 알림!`);
+			channel.send(`[${roleId}]: ${client.schedule[scheduleKey].parsedTime} 알림!`);
 			foundSchedule.push(scheduleKey);
 		}
 	}
