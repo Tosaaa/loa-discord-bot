@@ -1,3 +1,5 @@
+//TODO: move all selection menu to embed (too tedious now)
+
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } = require('discord.js');
 const { raidList } = require('../../environment/raidList.json');
 
