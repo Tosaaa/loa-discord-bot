@@ -8,13 +8,29 @@ module.exports = {
     async execute(interaction) {
         const client = interaction.client;
 
-        let result = `----------이번 주 일정 현황----------\n`;
-        for (const scheduleKey of Object.keys(client.schedule)) {
-            result += `[${scheduleKey.split('|')[0]}]: ${client.schedule[scheduleKey].parsedTime}\n`;
-        }
-        result += `---------------------------------------`;
+        let result = `**[이번 주 레이드 일정]**\n`;
+        let embedList = [];
+        
+        embedList.push(this.createEmbedBySchedule(client.schedule));
+
         await interaction.reply({
-            content: result
+            content: result,
+            embeds: embedList
         });
     },
+    
+    createEmbedBySchedule(schedule) {
+        const embed = {}
+        embed.color = 0xf0dc7a;
+        embed.title = `이번 주 레이드 일정`;
+        embed.fields = [];
+        for (const scheduleKey of Object.keys(schedule)) {
+            //TODO: 딜, 폿 구분해서 출력하기 (클래스 DB 만들어야 할 듯)
+            let name = `[${scheduleKey.split('|')[0]}]`;
+            let value = `${schedule[scheduleKey].parsedTime}`;
+            embed.fields.push({"name": name, "value": value});
+        }
+
+        return embed;
+    }
 }
