@@ -58,6 +58,7 @@ client.init = () => {
 	client.initCharacterSync();
 	client.initSchedule();
 	client.dataLoad();
+	client.initRole();
 	console.log("Bot initialized!");
 }
 
@@ -132,6 +133,29 @@ client.getEmoji = (emojiName) => {
 	return emojiString;
 }
 
+client.initRole = async () => {
+	const allMembersMap = await client.guilds.cache.get(guildId).members.fetch();
+	const allMembers = [...allMembersMap.values()];
+	const allRolesMap = await client.guilds.cache.get(guildId).roles.fetch();
+	const allRoles = [...allRolesMap.values()];
+
+	let participantSet = new Set();
+	Object.values(client.raidParticipant).map(obj => Object.keys(obj)).flat().forEach(userName => participantSet.add(userName));
+
+	raidList.forEach(raid => {
+		const raidRole = allRoles.find(role => role.name === raid.raidName);
+		if (!raidRole) return;
+		participantSet.forEach(userName => {
+			const member = allMembers.find(member => member.user.username === userName);
+
+			if (client.raidParticipant[raid.raidName][userName]) {
+				member.roles.add(raidRole);
+			} else {
+				member.roles.remove(raidRole);
+			}
+		});
+	});
+}
 
 client.updateRole = async (interaction) =>  {
 	const allMembersMap = await interaction.guild.members.fetch();
@@ -139,17 +163,17 @@ client.updateRole = async (interaction) =>  {
 	const allRolesMap = await interaction.guild.roles.fetch();
 	const allRoles = [...allRolesMap.values()];
 
-		raidList.forEach(raid => {
-			const raidRole = allRoles.find(role => role.name === raid.raidName);
-			if (!raidRole) return;
-			const member = allMembers.find(member => member.user.username === interaction.user.username);
+	raidList.forEach(raid => {
+		const raidRole = allRoles.find(role => role.name === raid.raidName);
+		if (!raidRole) return;
+		const member = allMembers.find(member => member.user.username === interaction.user.username);
 
-			if (client.raidParticipant[raid.raidName][interaction.user.username]) {
-				member.roles.add(raidRole);
-			} else {
-				member.roles.remove(raidRole);
-			}
-		});
+		if (client.raidParticipant[raid.raidName][interaction.user.username]) {
+			member.roles.add(raidRole);
+		} else {
+			member.roles.remove(raidRole);
+		}
+	});
 }
 
 client.checkTime = () => {
@@ -183,9 +207,6 @@ client.checkTime = () => {
 	client.dataBackup();
 }
 /********** functions **********/
-
-// Initialize
-client.init();
 
 // Log in to Discord with your client's token
 client.login(token);
