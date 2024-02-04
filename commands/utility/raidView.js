@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, embedLength } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { raidList } = require('../../environment/raidList.json');
 
 module.exports = {
