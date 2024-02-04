@@ -53,12 +53,12 @@ for (const file of eventFiles) {
 }
 
 /********** functions **********/
-client.init = () => {
+client.init = async () => {
 	client.initRaidParticipant();
 	client.initCharacterSync();
 	client.initSchedule();
 	client.dataLoad();
-	client.initRole();
+	await client.initRole();
 	client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
 }
@@ -140,21 +140,26 @@ client.initRole = async () => {
 	const allRolesMap = await client.guilds.cache.get(guildId).roles.fetch();
 	const allRoles = [...allRolesMap.values()];
 
-	let participantSet = new Set();
-	Object.values(client.raidParticipant).map(obj => Object.keys(obj)).flat().forEach(userName => participantSet.add(userName));
+	allMembers.forEach(member => {
+		const oldRoles = [];
+		const newRoles = [];
 
-	raidList.forEach(raid => {
-		const raidRole = allRoles.find(role => role.name === raid.raidName);
-		if (!raidRole) return;
-		participantSet.forEach(userName => {
-			const member = allMembers.find(member => member.user.username === userName);
-
-			if (client.raidParticipant[raid.raidName][userName]) {
-				member.roles.add(raidRole);
-			} else {
-				member.roles.remove(raidRole);
+		raidList.forEach(raid => {
+			const raidRole = allRoles.find(role => role.name === raid.raidName);
+			if (!raidRole) return;
+			
+			if([...member.roles.cache.keys()].includes(raidRole.id)) {
+				oldRoles.push(raidRole);
+			}
+			if (client.raidParticipant[raid.raidName][member.user.username]) {
+				newRoles.push(raidRole);
 			}
 		});
+		
+		const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
+		const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));
+		roleToAdd.forEach(role => member.roles.add(role));
+		roleToRemove.forEach(role => member.roles.remove(role));
 	});
 }
 
@@ -173,7 +178,7 @@ client.updateRole = async (interaction) =>  {
 		if([...member.roles.cache.keys()].includes(raidRole.id)) {
 			oldRoles.push(raidRole);
 		}
-		if (client.raidParticipant[raid.raidName][interaction.user.username]) {
+		if (client.raidParticipant[raid.raidName][member.user.username]) {
 			newRoles.push(raidRole);
 		}
 	});

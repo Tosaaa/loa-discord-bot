@@ -4,7 +4,7 @@ module.exports = {
     name: Events.ClientReady,
     once: true,
     async execute(client) {
-        client.init();
+        await client.init();
         console.log(`Ready! Logged in as ${client.user.tag}`);
 
         // await client.user.setAvatar('DB/loabot_icon.png');
