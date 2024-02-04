@@ -34,6 +34,7 @@ module.exports = {
                 interaction.client.initRaidParticipant();
                 interaction.client.updateRole(interaction);
                 interaction.client.dataBackup();
+                interaction.client.initRaidSelectionStartButton();
                 await confirmation.update({ content: '레이드 초기화 완료!', components: [] });
             } else {
                 await interaction.deleteReply();

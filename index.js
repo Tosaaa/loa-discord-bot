@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { token, guildId, channelId, channelIdLaboratory } = require('./config.json');
+const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection } = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
 const { raidList } = require('./environment/raidList.json');
 
@@ -59,6 +59,7 @@ client.init = () => {
 	client.initSchedule();
 	client.dataLoad();
 	client.initRole();
+	client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
 }
 
@@ -158,22 +159,29 @@ client.initRole = async () => {
 }
 
 client.updateRole = async (interaction) =>  {
-	const allMembersMap = await interaction.guild.members.fetch();
-	const allMembers = [...allMembersMap.values()];
 	const allRolesMap = await interaction.guild.roles.fetch();
 	const allRoles = [...allRolesMap.values()];
+
+	const member = interaction.member;
+	const oldRoles = [];
+	const newRoles = [];
 
 	raidList.forEach(raid => {
 		const raidRole = allRoles.find(role => role.name === raid.raidName);
 		if (!raidRole) return;
-		const member = allMembers.find(member => member.user.username === interaction.user.username);
-
+		
+		if([...member.roles.cache.keys()].includes(raidRole.id)) {
+			oldRoles.push(raidRole);
+		}
 		if (client.raidParticipant[raid.raidName][interaction.user.username]) {
-			member.roles.add(raidRole);
-		} else {
-			member.roles.remove(raidRole);
+			newRoles.push(raidRole);
 		}
 	});
+	
+	const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
+	const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));
+	roleToAdd.forEach(role => member.roles.add(role));
+	roleToRemove.forEach(role => member.roles.remove(role));
 }
 
 client.checkTime = () => {
@@ -206,7 +214,71 @@ client.checkTime = () => {
 	}
 	client.dataBackup();
 }
+
+const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+client.initRaidSelectionStartButton = async () => {
+	if (!client.messageId) {
+		const channel = client.channels.cache.get(channelIdRaidSelection); //<< Laboratory channel id
+		const confirm = new ButtonBuilder()
+			.setCustomId('raidSelectionStartButton')
+			.setLabel('레이드 선택 시작')
+			.setStyle(ButtonStyle.Success);
+
+		const row = new ActionRowBuilder()
+			.addComponents(confirm);
+		client.messageId = await channel.send({
+			content: `이번 주 레이드 선택`,
+			components: [row]
+		});
+	} else {
+		return;
+	}
+}
+
+client.initRaidSelection = async (interaction) => {
+	const channel = client.channels.cache.get(channelIdLaboratory); //<< Laboratory channel id
+	const characterList = client.characterSync[interaction.user.username];
+	if (!characterList) {
+		await interaction.reply({
+			content: "캐릭터 리스트 받아오기 실패. \n캐릭터 연동을 확인해주세요.",
+			ephemeral: true
+		});
+		return;
+	}
+	
+	await interaction.deferReply({ephemeral: true});
+
+	for (const selectedRaid of raidList) {
+		const possibleCharacterList = characterList.filter(character => character[2] >= selectedRaid.itemLevel).reverse();
+		if (possibleCharacterList.length === 0) continue;
+		
+		const playerSelection = new StringSelectMenuBuilder()
+			.setCustomId(`${selectedRaid.raidName}newPlayerSelection`)
+			.setPlaceholder(`${selectedRaid.raidName} 참여 캐릭터 선택`)
+			.setMinValues(0)
+			.setMaxValues(possibleCharacterList.length)
+			.addOptions(
+				...(possibleCharacterList.map(character => {
+					return new StringSelectMenuOptionBuilder()
+						.setLabel(character[0]+"/"+character[1]+"/"+character[2])
+						.setValue(JSON.stringify(character))
+						.setEmoji(client.getEmoji(character[1]))
+						.setDefault(client.isPlayerRaidParticipant(interaction.user.username, character[0], selectedRaid.raidName));
+				}))
+			);
+	
+		const row = new ActionRowBuilder()
+			.addComponents(playerSelection);
+	
+		const response = await interaction.followUp({
+			content: `${selectedRaid.raidName}에 참여하는 캐릭터 선택`,
+			components: [row],
+			ephemeral: true
+		});
+	}
+}
 /********** functions **********/
 
 // Log in to Discord with your client's token
 client.login(token);
+ 
