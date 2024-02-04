@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { raidList } = require('../../environment/raidList.json');
+const { classData } = require('../../environment/codex.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,14 +37,32 @@ module.exports = {
     },
 
     createEmbedByRaidName(interaction, raidName) {
+        const client = interaction.client;
         const embed = {}
         embed.color = interaction.guild.roles.cache.find(r => r.name === raidName).color;
         embed.title = raidName;
         embed.fields = [];
-        for (const userName of Object.keys(interaction.client.raidParticipant[raidName])) {
+        for (const userName of Object.keys(client.raidParticipant[raidName])) {
             //TODO: 딜, 폿 구분해서 출력하기 (클래스 DB 만들어야 할 듯)
-            let name = `${userName} (${interaction.client.raidParticipant[raidName][userName].length}캐릭)`;
-            let value = interaction.client.raidParticipant[raidName][userName].map(character => character[0]).join(' | ');
+            let DPSCount = 0;
+            let SupportCount = 0;
+            const characterList = client.raidParticipant[raidName][userName];
+            characterList.forEach(character => {
+                if (classData[character[1]].isSupport) {
+                    SupportCount++;
+                } else {
+                    DPSCount++;
+                }
+            });
+            let name;
+            if (DPSCount && SupportCount)
+                name = `${userName} (딜${DPSCount} 폿${SupportCount})`;
+            else if (DPSCount)
+                name = `${userName} (딜${DPSCount})`;
+            else
+                name = `${userName} (폿${SupportCount})`;
+
+            let value = characterList.map(character => character[0]).join(' | ');
             embed.fields.push({"name": name, "value": value});
         }
 

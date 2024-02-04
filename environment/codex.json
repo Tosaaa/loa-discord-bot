@@ -1,0 +1,108 @@
+{
+    "classData": {
+        "디스트로이어": {
+            "className": "디스트로이어",
+            "isSupport": false
+        },
+        "워로드": {
+            "className": "워로드",
+            "isSupport": false
+        },
+        "버서커": {
+            "className": "버서커",
+            "isSupport": false
+        },
+        "홀리나이트": {
+            "className": "홀리나이트",
+            "isSupport": true
+        },
+        "슬레이어": {
+            "className": "슬레이어",
+            "isSupport": false
+        },
+        "배틀마스터": {
+            "className": "배틀마스터",
+            "isSupport": false
+        },
+        "인파이터": {
+            "className": "인파이터",
+            "isSupport": false
+        },
+        "기공사": {
+            "className": "기공사",
+            "isSupport": false
+        },
+        "창술사": {
+            "className": "창술사",
+            "isSupport": false
+        },
+        "스트라이커": {
+            "className": "스트라이커",
+            "isSupport": false
+        },
+        "브레이커": {
+            "className": "브레이커",
+            "isSupport": false
+        },
+        "데빌헌터": {
+            "className": "데빌헌터",
+            "isSupport": false
+        },
+        "블래스터": {
+            "className": "블래스터",
+            "isSupport": false
+        },
+        "호크아이": {
+            "className": "호크아이",
+            "isSupport": false
+        },
+        "스카우터": {
+            "className": "스카우터",
+            "isSupport": false
+        },
+        "건슬링어": {
+            "className": "건슬링어",
+            "isSupport": false
+        },
+        "바드": {
+            "className": "바드",
+            "isSupport": true
+        },
+        "서머너": {
+            "className": "서머너",
+            "isSupport": false
+        },
+        "아르카나": {
+            "className": "아르카나",
+            "isSupport": false
+        },
+        "소서리스": {
+            "className": "소서리스",
+            "isSupport": false
+        },
+        "데모닉": {
+            "className": "데모닉",
+            "isSupport": false
+        },
+        "블레이드": {
+            "className": "블레이드",
+            "isSupport": false
+        },
+        "리퍼": {
+            "className": "리퍼",
+            "isSupport": false
+        },
+        "소울이터": {
+            "className": "소울이터",
+            "isSupport": false
+        },
+        "도화가": {
+            "className": "도화가",
+            "isSupport": true
+        },
+        "기상술사": {
+            "className": "기상술사",
+            "isSupport": false
+        }
+    }
+}
