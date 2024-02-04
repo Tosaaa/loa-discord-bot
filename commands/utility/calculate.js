@@ -27,8 +27,7 @@ module.exports = {
         const res = `공평: ${equalValue.toFixed(2)} \n선점: ${preemptionValue.toFixed(2)}`;
 
         const response = await interaction.reply({
-            content: res, 
-            ephemeral: true
+            content: res
         });
     },
 };
