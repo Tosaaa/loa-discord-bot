@@ -52,6 +52,12 @@ for (const file of eventFiles) {
 	}
 }
 
+// Log in to Discord with your client's token
+client.login(token);
+ 
+
+
+
 /********** functions **********/
 client.init = async () => {
 	client.initRaidParticipant();
@@ -241,7 +247,6 @@ client.initRaidSelectionStartButton = async () => {
 }
 
 client.initRaidSelection = async (interaction) => {
-	const channel = client.channels.cache.get(channelIdLaboratory); //<< Laboratory channel id
 	const characterList = client.characterSync[interaction.user.username];
 	if (!characterList) {
 		await interaction.reply({
@@ -283,7 +288,3 @@ client.initRaidSelection = async (interaction) => {
 	}
 }
 /********** functions **********/
-
-// Log in to Discord with your client's token
-client.login(token);
- 

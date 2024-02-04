@@ -46,7 +46,7 @@ module.exports = {
 						option.default = false;
 					}
 				});
-				// interaction.client.isPlayerRaidParticipant(interaction.user.username, character[0], selectedRaid.raidName)
+				
                 await interaction.update({
                     content: `${selectedRaidName}에 참여하는 캐릭터 선택`,
 					components: [row]
