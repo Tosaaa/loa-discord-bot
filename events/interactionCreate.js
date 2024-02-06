@@ -3,6 +3,10 @@ const { Events } = require('discord.js');
 module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
+		// const interactionTypeName = interaction.constructor.name;
+		// switch문에 사용하려고 했는데 constructor 이름으로만 판단하는거라 위험성이 있음.
+		// 안전하게 BaseInteraction이 제공하는 타입 검사 함수로 if else 반복.
+		
 		if (interaction.isChatInputCommand()) {
 			const command = interaction.client.commands.get(interaction.commandName);
 
