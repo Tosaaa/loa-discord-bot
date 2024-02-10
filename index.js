@@ -82,6 +82,7 @@ client.initCharacterSync = () => {
 
 client.initSchedule = () => {
 	client.schedule = {};
+	client.resetFlag = false;
 	setInterval(client.checkTime, 5000);
 }
 
@@ -195,7 +196,7 @@ client.updateRole = async (interaction) =>  {
 	roleToRemove.forEach(role => member.roles.remove(role));
 }
 
-client.checkTime = () => {
+client.checkTime = async () => {
 	// IMPORTANT: github codespace follow utc+0 timezone, but raspberry pi timezone is set to utc+9
 	let machineDateObj = new Date();
     let machineDate = machineDateObj.toLocaleDateString();
@@ -208,6 +209,7 @@ client.checkTime = () => {
 	let newMachineDateObj = new Date(`${machineDate} ${machineHours}:${machineMinutes}`);
 	let machineTime = newMachineDateObj.getTime();
 
+	///// SCHEDULE /////
 	let foundSchedule  = [];
 	for (const scheduleKey of Object.keys(client.schedule)) {
 		if (client.schedule[scheduleKey].rawTime <= machineTime) {
@@ -215,15 +217,34 @@ client.checkTime = () => {
 			// const channel = client.channels.cache.get(channelIdLaboratory); << Laboratory channel id
 			const roleName = `${scheduleKey.split('|')[0]}`;
 			const roleId = client.guilds.cache.get(guildId).roles.cache.find(r => r.name === roleName) ?? roleName;
-			channel.send(`[${roleId}]: ${client.schedule[scheduleKey].parsedTime} 알림!`);
+			await channel.send(`[${roleId}]: ${client.schedule[scheduleKey].parsedTime} 알림!`);
 			foundSchedule.push(scheduleKey);
 		}
 	}
 
 	for (const scheduleKey of foundSchedule) {
 		delete client.schedule[scheduleKey];
+		client.dataBackup();
 	}
-	client.dataBackup();
+	///// SCHEDULE /////
+
+	///// LOADAY /////
+	const DAY_ARR = ['일', '월', '화', '수', '목', '금', '토'];
+	if (DAY_ARR[newMachineDateObj.getDay()] === '수' &&
+			newMachineDateObj.getHours === 6 &&
+			newMachineDateObj.getMinutes === 0 &&
+			client.resetFlag === false) {
+
+		client.initRaidParticipant();
+		await client.initRole();
+		client.dataBackup();
+		client.resetFlag = true;
+		const channel = client.channels.cache.get(channelId);
+		await channel.send(`레이드 초기화 완료!`);
+	} else {
+		client.resetFlag = false;
+	}
+	///// LOADAY /////
 }
 
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');

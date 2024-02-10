@@ -32,9 +32,8 @@ module.exports = {
             const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
             if (confirmation.customId === '네') {
                 interaction.client.initRaidParticipant();
-                interaction.client.updateRole(interaction);
+                await interaction.client.initRole();
                 interaction.client.dataBackup();
-                interaction.client.initRaidSelectionStartButton();
                 await confirmation.update({ content: '레이드 초기화 완료!', components: [] });
             } else {
                 await interaction.deleteReply();
