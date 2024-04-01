@@ -64,6 +64,11 @@
             "raidName": "하키드나",
             "itemLevel": 1630,
             "peopleCount": 8
+        },
+        {
+            "raidName": "베히모스",
+            "itemLevel": 1640,
+            "peopleCount": 16
         }
     ]
 }
