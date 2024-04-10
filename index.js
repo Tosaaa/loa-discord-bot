@@ -322,8 +322,6 @@ client.initRaidSelection = async (interaction) => {
 }
 
 client.updateCharacter = async (userName, playerNameList) => {
-	const channel = client.channels.cache.get(channelIdLaboratory);
-
 	let characterList = [];
 	for (const playerName of playerNameList) {
 		characterList = characterList.concat(await parseCharacters(playerName));
@@ -338,6 +336,12 @@ client.updateCharacter = async (userName, playerNameList) => {
 	return true;
 }
 
+client.updateAllCharacter = async () => {
+	for (const userName of Object.keys(client.mainCharacter)) {
+		const playerNameList = client.mainCharacter[userName];
+		await client.updateCharacter(userName, playerNameList);
+	}
+}
 
 async function fetchCharacters(playerName) {
 	let options = {
