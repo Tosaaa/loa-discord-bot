@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection } = require('./config.json');
+const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
 const { raidList } = require('./environment/raidList.json');
 
@@ -61,6 +61,7 @@ client.login(token);
 /********** functions **********/
 client.init = async () => {
 	client.initRaidParticipant();
+	client.initMainCharacter();
 	client.initCharacterSync();
 	client.initSchedule();
 	client.dataLoad();
@@ -74,6 +75,10 @@ client.initRaidParticipant = () => {
 	raidList.forEach(raid => {
 		client.raidParticipant[raid.raidName] = {};
 	});
+}
+
+client.initMainCharacter = () => {
+	client.mainCharacter = {};
 }
 
 client.initCharacterSync = () => {
@@ -97,6 +102,7 @@ client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
 
 client.dataBackup = () => {
 	fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
+	fs.writeFileSync('DB/mainCharacter.json', JSON.stringify(client.mainCharacter));
 	fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
 	fs.writeFileSync('DB/schedule.json', JSON.stringify(client.schedule));
 }
@@ -118,6 +124,12 @@ client.dataLoad = () => {
 		fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
 	}
 	
+	try {
+		client.mainCharacter = JSON.parse(fs.readFileSync('DB/mainCharacter.json').toString());
+	} catch (e) {
+		fs.writeFileSync('DB/mainCharacter.json', JSON.stringify(client.mainCharacter));
+	}
+
 	try {
 		client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
 	} catch (e) {
@@ -307,5 +319,56 @@ client.initRaidSelection = async (interaction) => {
 			ephemeral: true
 		});
 	}
+}
+
+client.updateCharacter = async (userName, playerNameList) => {
+	const channel = client.channels.cache.get(channelIdLaboratory);
+
+	let characterList = [];
+	for (const playerName of playerNameList) {
+		characterList = characterList.concat(await parseCharacters(playerName));
+	}
+
+	if (!characterList) {
+		return false;
+	}
+	client.mainCharacter[userName] = playerNameList;
+	client.characterSync[userName] = characterList;
+	client.dataBackup();
+	return true;
+}
+
+
+async function fetchCharacters(playerName) {
+	let options = {
+	  'method': 'get',
+	  'headers': {
+		'accept': 'application/json',
+		'authorization': 'bearer ' + API_KEY
+	  }
+	}
+	let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
+	return await res.json();
+}
+
+async function parseCharacters(playerName) {
+	let characters = await fetchCharacters(playerName);
+	if (!characters) return null;
+	characters = characters.filter(character => {
+		return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
+	});
+	characters.sort((a, b) => {
+	  return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
+	});
+  
+	let result = [];
+	for (let i = 0; i < characters.length; i++) {
+		let char = characters[i];
+		let CharacterName = char.CharacterName;
+		let CharacterClassName = char.CharacterClassName;
+		let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
+		result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
+	}
+	return result;
 }
 /********** functions **********/
