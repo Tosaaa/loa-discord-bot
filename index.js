@@ -248,6 +248,7 @@ client.checkTime = async () => {
 		if (client.resetFlag === false) {
 			client.initRaidParticipant();
 			await client.initRole();
+			await client.updateAllCharacter();
 			client.dataBackup();
 			client.resetFlag = true;
 			const channel = client.channels.cache.get(channelId);
@@ -332,7 +333,6 @@ client.updateCharacter = async (userName, playerNameList) => {
 	}
 	client.mainCharacter[userName] = playerNameList;
 	client.characterSync[userName] = characterList;
-	client.dataBackup();
 	return true;
 }
 
