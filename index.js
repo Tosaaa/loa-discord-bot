@@ -66,6 +66,7 @@ client.init = async () => {
 	client.initSchedule();
 	client.dataLoad();
 	await client.initRole();
+	await client.updateAllCharacter();
 	// client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
 }
