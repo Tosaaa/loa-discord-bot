@@ -256,11 +256,23 @@ client.checkTime = async () => {
 		if (client.resetFlag === false) {
 			client.initRaidParticipant();
 			await client.initRole();
-			await client.updateAllCharacter();
 			client.dataBackup();
 			client.resetFlag = true;
 			const channel = client.channels.cache.get(channelId);
 			await channel.send(`레이드 초기화 완료!`);
+		}
+	} else {
+		client.resetFlag = false;
+	}
+
+	// API online된 10시 10분에 캐릭터 정보 업데이트
+	if (DAY_ARR[newMachineDateObj.getDay()] === '수' &&
+			newMachineDateObj.getHours() === 10 &&
+			newMachineDateObj.getMinutes() === 10) {
+		if (client.resetFlag === false) {
+			await client.updateAllCharacter();
+			client.dataBackup();
+			client.resetFlag = true;
 		}
 	} else {
 		client.resetFlag = false;
