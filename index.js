@@ -95,7 +95,8 @@ client.initCharacterSync = () => {
 
 client.initSchedule = () => {
 	client.schedule = {};
-	client.resetFlag = false;
+	client.resetFlag = false; // LOADAY 06:00 RESET
+	client.resetFlag2 = false; // LOADAY 10:10 CHARACTER SYNC
 	setInterval(client.checkTime, 5000);
 }
 
@@ -269,13 +270,13 @@ client.checkTime = async () => {
 	if (DAY_ARR[newMachineDateObj.getDay()] === '수' &&
 			newMachineDateObj.getHours() === 10 &&
 			newMachineDateObj.getMinutes() === 10) {
-		if (client.resetFlag === false) {
+		if (client.resetFlag2 === false) {
 			await client.updateAllCharacter();
 			client.dataBackup();
-			client.resetFlag = true;
+			client.resetFlag2 = true;
 		}
 	} else {
-		client.resetFlag = false;
+		client.resetFlag2 = false;
 	}
 	///// LOADAY /////
 }
