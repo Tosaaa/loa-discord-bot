@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const logger = require('./logger.js');
+const mysql = require('mysql');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
@@ -76,6 +77,14 @@ client.init = async () => {
 	await client.updateAllCharacter();
 	// client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
+}
+
+client.initDB = () => {
+	client.con = mysql.createConnection({
+		host: "localhost",
+		user: "yourusername",
+		password: "yourpassword"
+	  });
 }
 
 client.initRaidParticipant = () => {

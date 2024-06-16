@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
+    "mysql": "^2.18.1",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0"
   }
