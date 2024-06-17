@@ -68,6 +68,7 @@ client.login(token);
 
 /********** functions **********/
 client.init = async () => {
+	client.initDB();
 	client.initRaidParticipant();
 	client.initMainCharacter();
 	client.initCharacterSync();
@@ -82,9 +83,15 @@ client.init = async () => {
 client.initDB = () => {
 	client.con = mysql.createConnection({
 		host: "localhost",
-		user: "yourusername",
-		password: "yourpassword"
+		user: "loabot",
+		database: "loabot_db",
+		password: token // DISCORD_TOKEN
 	  });
+	  
+	client.con.connect(err => {
+		if (err) throw err;
+		console.log("DB connected");
+	});
 }
 
 client.initRaidParticipant = () => {
