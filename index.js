@@ -87,11 +87,19 @@ client.initDB = () => {
 		database: "loabot_db",
 		password: token // DISCORD_TOKEN
 	  });
-	  
+
 	client.con.connect(err => {
 		if (err) throw err;
 		console.log("DB connected");
 	});
+
+	// client.con.query(`SELECT * FROM raids`, (err, rows) => {
+	// 	if (err) return console.log(err);
+	// 	// raid_id, raid_name, max_participants, required_item_level
+	// 	for (const row of rows) {
+	// 		console.log(row.raid_id, row.raid_name, row.max_participants, row.required_item_level);
+	// 	}
+	// });
 }
 
 client.initRaidParticipant = () => {
