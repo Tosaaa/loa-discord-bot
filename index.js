@@ -82,25 +82,13 @@ client.init = async () => {
 }
 
 client.initDB = () => {
-	// loabot_db.selectAllClasses((err, data) => {
-	// 	if (err) console.log(err);
-	// 	else console.log(data);
-	  
-	// 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
-	// 	// loabot_db.pool.end(function(err){
-	// 	//   if (err) console.log(err);
-	// 	//   else {
-	// 	// 	console.log('Connection pool has closed');
-	// 	//   }
-	// 	// });
-	// });
-
-	// client.con.query(`SELECT * FROM raids`, (err, rows) => {
-	// 	if (err) return console.log(err);
-	// 	// raid_id, raid_name, max_participants, required_item_level
-	// 	for (const row of rows) {
-	// 		console.log(row.raid_id, row.raid_name, row.max_participants, row.required_item_level);
-	// 	}
+	loabot_db.selectAllClasses();
+	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
+	// loabot_db.pool.end(function(err){
+	//   if (err) console.log(err);
+	//   else {
+	// 	console.log('Connection pool has closed');
+	//   }
 	// });
 }
 
