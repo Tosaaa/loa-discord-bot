@@ -82,7 +82,7 @@ client.init = async () => {
 }
 
 client.initDB = () => {
-	loabot_db.selectAllClasses();
+	loabot_db.syncCharacter("tosaaa", ["빛의프리미컬"]);
 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
 	// loabot_db.pool.end(function(err){
 	//   if (err) console.log(err);
