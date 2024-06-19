@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const logger = require('./logger.js');
 const mysql = require('mysql');
+const loabot_db = require('./functions/loabot_db/db_sql.js');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
@@ -81,17 +82,18 @@ client.init = async () => {
 }
 
 client.initDB = () => {
-	client.con = mysql.createConnection({
-		host: "localhost",
-		user: "loabot",
-		database: "loabot_db",
-		password: token // DISCORD_TOKEN
-	  });
-
-	client.con.connect(err => {
-		if (err) throw err;
-		console.log("DB connected");
-	});
+	// loabot_db.selectAllClasses((err, data) => {
+	// 	if (err) console.log(err);
+	// 	else console.log(data);
+	  
+	// 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
+	// 	// loabot_db.pool.end(function(err){
+	// 	//   if (err) console.log(err);
+	// 	//   else {
+	// 	// 	console.log('Connection pool has closed');
+	// 	//   }
+	// 	// });
+	// });
 
 	// client.con.query(`SELECT * FROM raids`, (err, rows) => {
 	// 	if (err) return console.log(err);
