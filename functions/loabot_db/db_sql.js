@@ -95,14 +95,31 @@ module.exports = function () {
                         let main_character_id = data[0].character_id;
                         await _do_query(`UPDATE users SET main_character_id = ? WHERE discord_id = ?`, [main_character_id, discord_id]);
                     }
-    
-                } catch(err) {
+                } catch (err) {
                     console.log(err);
                     reject(err);
                 }
                 resolve();
             });
-            
+        },
+
+        resetCharacter: (discord_id) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    // 1. 유저 있나 확인
+                    let data = await _do_query(`SELECT discord_id FROM users WHERE discord_id = ?`, [discord_id]);
+                    if (!data.length) {
+                        reject("연동된 캐릭터가 없습니다.");
+                    } else {
+                        await _do_query(`UPDATE users SET main_character_id = NULL WHERE discord_id = ?`, [discord_id]);
+                        await _do_query(`DELETE FROM characters WHERE discord_id = ?`, [discord_id]);
+                        await _do_query(`DELETE FROM users WHERE discord_id = ?`, [discord_id]); // 근데 굳이 유저까지 지워야 할까?
+                    }
+                } catch (err) {
+                    reject(err);
+                }
+                resolve();
+            });
         },
 
         pool: pool
