@@ -57,51 +57,52 @@ module.exports = function () {
                 console.log(err);
             }
         },
-        syncCharacter: async (discord_id, playerNameList) => {
-            let characterList = [];
-            for (const playerName of playerNameList) 
-                characterList = characterList.concat(await parseCharacters(playerName));
-            
-            if (!characterList) return false;
-
-            let main_character_name = playerNameList[0];
-            let class_name, item_level;
-            for (const character of characterList) {
-                if (character[0] === main_character_name) {
-                    class_name = character[1];
-                    item_level = character[2];
-                    break;
-                }
-            }
-
-            try {
-                // 1. 유저 있나 확인 및 없으면 추가
-                let user = await _do_query(`SELECT discord_id FROM users WHERE discord_id = ${discord_id}`);
-                if (!user) {
-                    await _do_query(`INSERT INTO users ${discord_id, NULL}`);
-                }
-
-                for (const character of characterList) {
-                    // 2. class_name 있나 확인
-                    let class_id = await _do_query(`SELECT class_id FROM classes WHERE class_name = ${class_name}`)
-                    if (!class_id) return false;
-                    
-                    // 3. characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
-                    let exist = await _do_query(`SELECT * FROM characters WHERE character_name = ${character[0]}`);
-                    if (!exist) {
-                        await _do_query(`INSERT INTO characters (discord_id, class_name, class_id, item_level) VALUE (${discord_id}, ${character[1]}, ${class_id}, ${character[2]})`);
-                    } else {
-                        await _do_query(`UPDATE characters SET item_level = ${character[2]} WHERE character_name = ${character[0]}`);
+        syncCharacter: (discord_id, playerNameList) => {
+            return new Promise(async (resolve, reject) => {
+                let characterList = [];
+                for (const playerName of playerNameList) 
+                    characterList = characterList.concat(await parseCharacters(playerName));
+                if (!characterList[0]) reject("해당 캐릭터가 존재하지 않습니다.");
+           
+                try {
+                    // 1. 유저 있나 확인 및 없으면 추가
+                    let data = await _do_query(`SELECT discord_id FROM users WHERE discord_id = "${discord_id}"`);
+                    if (!data.length) {
+                        await _do_query(`INSERT INTO users VALUE ("${discord_id}", NULL)`);
                     }
+    
+                    for (const character of characterList) {
+                        // 2. class_name 있나 확인
+                        data = await _do_query(`SELECT class_id FROM classes WHERE class_name = "${character[1]}"`)
+                        if (!data.length) reject("클래스 조회 불가, 개발자에게 문의해주세요.");
+                        let class_id = data[0].class_id;
+    
+                        // 3. characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
+                        data = await _do_query(`SELECT * FROM characters WHERE character_name = "${character[0]}"`);
+                        if (!data.length) {
+                            await _do_query(`INSERT INTO characters (discord_id, character_name, class_id, item_level) VALUE ("${discord_id}", "${character[0]}", ${class_id}, ${character[2]})`);
+                        } else {
+                            await _do_query(`UPDATE characters SET item_level = ${character[2]} WHERE character_name = "${character[0]}"`);
+                        }
+                    }
+    
+                    // 4. 대표 캐릭터 업데이트
+                    let main_character_name = playerNameList[0];
+                    data = await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = "${main_character_name}"`);
+                    if (data[0].discord_id !== discord_id) {
+                        reject(`해당 캐릭터는 ${data[0].discord_id}이/가 사용 중입니다.`);
+                    } else {
+                        let main_character_id = data[0].character_id;
+                        await _do_query(`UPDATE users SET main_character_id = "${main_character_id}" WHERE discord_id = "${discord_id}"`);
+                    }
+    
+                } catch(err) {
+                    console.log(err);
+                    reject(err);
                 }
-
-                // 4. 대표 캐릭터 업데이트
-                let main_character_id = await _do_query(`SELECT character_id FROM characters WHERE character_name = ${main_character_name}`);
-                await _do_query(`UPDATE users SET main_character_id = ${main_character_id} WHERE discord_id = ${discord_id}`);
-
-            } catch(err) {
-                console.log(err);
-            }
+                resolve();
+            });
+            
         },
 
         pool: pool

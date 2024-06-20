@@ -59,6 +59,7 @@ for (const file of eventFiles) {
 client.on('debug', (log) => {
 	logger.info(log);
 });
+client.writeLog = (log) => logger.info(log);
 
 
 // Log in to Discord with your client's token
@@ -82,7 +83,14 @@ client.init = async () => {
 }
 
 client.initDB = () => {
-	loabot_db.syncCharacter("tosaaa", ["빛의프리미컬"]);
+	// loabot_db.syncCharacter("tosaaa", ["프리미컬"]);
+	// loabot_db.syncCharacter("freshpodo", ["충곤"]);
+	// loabot_db.syncCharacter("sm", ["멘탈잡고해왕성"]);
+	// loabot_db.syncCharacter("eytg8e", ["4근딜로공부수기","냠냠맛있는내실익스프레스"]);
+	// loabot_db.syncCharacter("lhk14", ["이스낫"]);
+	// loabot_db.syncCharacter("readymind", ["어은동잔혈머신"]);
+
+	
 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
 	// loabot_db.pool.end(function(err){
 	//   if (err) console.log(err);

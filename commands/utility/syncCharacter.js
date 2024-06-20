@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { API_KEY } = require('../../config.json');
+const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,19 +23,19 @@ module.exports = {
           playerNameList.push(subPlayerName);
         }
 
-        const success = await interaction.client.updateCharacter(interaction.user.username, playerNameList);
-        if (!success) {
-            await interaction.reply({
-                content: "캐릭터 연동 실패, 닉네임이 올바른지 확인해주세요.",
-                ephemeral: true
-            });
-            return;
-        } else {
+        try {
+            await loabot_db.syncCharacter(interaction.user.username, playerNameList);
             await interaction.reply({
                 content: "캐릭터 연동 완료!",
                 ephemeral: true
             });
-            return;
+        } catch (err) {
+            interaction.client.writeLog(`${interaction.user.username}: ${err}`);
+            await interaction.reply({
+                content: `캐릭터 연동 실패: ${err}`,
+                ephemeral: true
+            });
         }
+        return;
     }
 }
