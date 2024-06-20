@@ -83,6 +83,8 @@ client.init = async () => {
 }
 
 client.initDB = () => {
+	// loabot_db.getCharacters("tosaaa").then(console.log);
+	loabot_db.isRaidParticipant("프리미컬", "쿠크").then(console.log);
 	// loabot_db.syncCharacter("tosaaa", ["프리미컬"]);
 	// loabot_db.syncCharacter("freshpodo", ["충곤"]);
 	// loabot_db.syncCharacter("sm", ["멘탈잡고해왕성"]);
