@@ -30,7 +30,7 @@ module.exports = {
                 ephemeral: true
             });
         } catch (err) {
-            interaction.client.writeLog(`${interaction.user.username}: ${err}`);
+            interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
                 content: `캐릭터 연동 실패: ${err}`,
                 ephemeral: true

@@ -36,10 +36,10 @@ async function parseCharacters(playerName) {
 
 
 module.exports = function () {
-    _do_query = (SQL_QUERY) => {
+    _do_query = (SQL_QUERY, PARAMS) => {
         return new Promise((resolve, reject) => {
             pool.getConnection((err, con) => {
-                con.query(SQL_QUERY, (err, data) => {
+                con.query(SQL_QUERY, PARAMS, (err, data) => {
                     con.release();
                     if (err) reject(err);
                     resolve(data);
@@ -66,34 +66,34 @@ module.exports = function () {
            
                 try {
                     // 1. 유저 있나 확인 및 없으면 추가
-                    let data = await _do_query(`SELECT discord_id FROM users WHERE discord_id = "${discord_id}"`);
+                    let data = await _do_query(`SELECT discord_id FROM users WHERE discord_id = ?`, [discord_id]);
                     if (!data.length) {
-                        await _do_query(`INSERT INTO users VALUE ("${discord_id}", NULL)`);
+                        await _do_query(`INSERT INTO users VALUE (?, NULL)`, [discord_id]);
                     }
     
                     for (const character of characterList) {
                         // 2. class_name 있나 확인
-                        data = await _do_query(`SELECT class_id FROM classes WHERE class_name = "${character[1]}"`)
+                        data = await _do_query(`SELECT class_id FROM classes WHERE class_name = ?`, [character[1]])
                         if (!data.length) reject("클래스 조회 불가, 개발자에게 문의해주세요.");
                         let class_id = data[0].class_id;
     
                         // 3. characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
-                        data = await _do_query(`SELECT * FROM characters WHERE character_name = "${character[0]}"`);
+                        data = await _do_query(`SELECT * FROM characters WHERE character_name = ?`, [character[0]]);
                         if (!data.length) {
-                            await _do_query(`INSERT INTO characters (discord_id, character_name, class_id, item_level) VALUE ("${discord_id}", "${character[0]}", ${class_id}, ${character[2]})`);
+                            await _do_query(`INSERT INTO characters (discord_id, character_name, class_id, item_level) VALUE (?, ?, ?, ?)`, [discord_id, character[0], class_id, character[2]]);
                         } else {
-                            await _do_query(`UPDATE characters SET item_level = ${character[2]} WHERE character_name = "${character[0]}"`);
+                            await _do_query(`UPDATE characters SET item_level = ? WHERE character_name = ?`, [character[2], character[0]]);
                         }
                     }
     
                     // 4. 대표 캐릭터 업데이트
                     let main_character_name = playerNameList[0];
-                    data = await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = "${main_character_name}"`);
+                    data = await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = ?`, [main_character_name]);
                     if (data[0].discord_id !== discord_id) {
                         reject(`해당 캐릭터는 ${data[0].discord_id}이/가 사용 중입니다.`);
                     } else {
                         let main_character_id = data[0].character_id;
-                        await _do_query(`UPDATE users SET main_character_id = "${main_character_id}" WHERE discord_id = "${discord_id}"`);
+                        await _do_query(`UPDATE users SET main_character_id = ? WHERE discord_id = ?`, [main_character_id, discord_id]);
                     }
     
                 } catch(err) {
