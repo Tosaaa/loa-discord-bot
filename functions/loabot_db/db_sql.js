@@ -138,7 +138,32 @@ module.exports = function () {
                 try {   
                     let character_id = (await _do_query(`SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
                     let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
-                    // 여기부터 구현
+                    let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
+                    if (status === "완료") {                        
+                        await _do_query(`UPDATE raid_participation SET status = '참여' WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
+                    } else if (status === "참여") {
+                        // do nothing
+                    } else {
+                        await _do_query(`INSERT INTO raid_participation VALUE (?, ?, '참여')`, [character_id, raid_id]);
+                    }
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        },
+
+        completeRaidParticipant: (character_name, raid_name) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let character_id = (await _do_query(`SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                    let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                    let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
+                    if (status === "참여") {                        
+                        await _do_query(`UPDATE raid_participation SET status = '완료' WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
+                    } else {
+                        // status가 참여가 아닌데 이 함수를 요청하는 상황. 일단 아무 것도 안함.
+                    }
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -149,6 +174,14 @@ module.exports = function () {
         deleteRaidParticipant: (character_name, raid_name) => {
             return new Promise(async (resolve, reject) => {
                 try {
+                    let character_id = (await _do_query(`SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                    let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                    let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
+                    if (status) {                        
+                        await _do_query(`DELETE FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
+                    } else {
+                        // do nothing
+                    }
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -162,7 +195,61 @@ module.exports = function () {
                     let character_id = (await _do_query(`SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
                     let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
                     let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]))[0]?.status;
-                    resolve(status);
+                    resolve(status === "참여");
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        },
+
+        getRaidParticipant: (raid_name) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                    let character_ids = (await _do_query(`SELECT character_id FROM raid_participation WHERE raid_id = ?`, [raid_id]));
+                    let res = {};
+                    for (const character_id of character_ids) {
+                        let data = (await _do_query(`SELECT discord_id, character_name FROM characters WHERE character_id = ?`, [character_id]))[0];
+                        let discord_id = data.discord_id;
+                        let character_name = data.character_name;
+                        if (!res[discord_id]) res[discord_id] = [];
+                        res.discord_id.push(character_name);
+                    }
+                    resolve(res);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        },
+
+        resetRaidParticipant: () => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    await _do_query(`TRUNCATE FROM raid_participation`);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        },
+
+        getRaidList: () => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let raidList = await _do_query(`SELECT raid_name, max_participants, required_item_level FROM raids ORDER BY required_item_level`);
+                    resolve(raidList);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        },
+
+        isSupport: (character_name) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let class_id = (await _db_query(`SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
+                    let is_support = (await _db_query(`SELECT is_support FROM classes WHERE class_id = ?`, [class_id]))[0]?.is_support;
+                    resolve(is_support);
                 } catch (err) {
                     reject(err);
                 }

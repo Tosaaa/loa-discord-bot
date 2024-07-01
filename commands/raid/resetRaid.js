@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
+const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -31,9 +32,8 @@ module.exports = {
         try {
             const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
             if (confirmation.customId === '네') {
-                interaction.client.initRaidParticipant();
+                await loabot_db.resetRaidParticipant();
                 await interaction.client.initRole();
-                interaction.client.dataBackup();
                 await confirmation.update({ content: '레이드 초기화 완료!', components: [] });
             } else {
                 await interaction.deleteReply();

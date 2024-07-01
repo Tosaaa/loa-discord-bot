@@ -70,7 +70,7 @@ client.login(token);
 
 /********** functions **********/
 client.init = async () => {
-	client.initDB();
+	await client.initDB();
 	client.initRaidParticipant();
 	client.initMainCharacter();
 	client.initCharacterSync();
@@ -82,17 +82,14 @@ client.init = async () => {
 	console.log("Bot initialized!");
 }
 
-client.initDB = () => {
-	// loabot_db.getCharacters("tosaaa").then(console.log);
-	loabot_db.isRaidParticipant("프리미컬", "쿠크").then(console.log);
-	// loabot_db.syncCharacter("tosaaa", ["프리미컬"]);
-	// loabot_db.syncCharacter("freshpodo", ["충곤"]);
-	// loabot_db.syncCharacter("sm", ["멘탈잡고해왕성"]);
-	// loabot_db.syncCharacter("eytg8e", ["4근딜로공부수기","냠냠맛있는내실익스프레스"]);
-	// loabot_db.syncCharacter("lhk14", ["이스낫"]);
-	// loabot_db.syncCharacter("readymind", ["어은동잔혈머신"]);
+client.initDB = async () => {
+	// await loabot_db.addRaidParticipant("프리미컬", "하멘");
+	// await loabot_db.completeRaidParticipant("프리미컬", "하멘");
+	let raidList = (await loabot_db.getRaidList()).map(raid => {
+		return {name: raid.raid_name, value: JSON.stringify(raid)};
+	});
+	console.log(raidList);
 
-	
 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
 	// loabot_db.pool.end(function(err){
 	//   if (err) console.log(err);
@@ -192,21 +189,28 @@ client.initRole = async () => {
 	const allRolesMap = await client.guilds.cache.get(guildId).roles.fetch();
 	const allRoles = [...allRolesMap.values()];
 
-	allMembers.forEach(member => {
+	const raidList = await loabot_db.getRaidList();
+
+	allMembers.forEach(async member => {
 		const oldRoles = [];
 		const newRoles = [];
 
-		raidList.forEach(raid => {
-			const raidRole = allRoles.find(role => role.name === raid.raidName);
+		for (const raid of raidList) {
+			const raidRole = allRoles.find(role => role.name === raid.raid_name);
 			if (!raidRole) return;
 			
 			if([...member.roles.cache.keys()].includes(raidRole.id)) {
 				oldRoles.push(raidRole);
 			}
-			if (client.raidParticipant[raid.raidName][member.user.username]) {
-				newRoles.push(raidRole);
+
+			const characters = await loabot_db.getCharacters(member.user.username);
+			for (const character of characters) {
+				if (await loabot_db.isRaidParticipant(character[0], raid.raid_name)) {
+					newRoles.push(raidRole);
+					break;
+				}
 			}
-		});
+		}
 		
 		const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
 		const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));

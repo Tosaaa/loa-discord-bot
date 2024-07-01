@@ -2,6 +2,7 @@
 
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } = require('discord.js');
 const { raidList } = require('../../environment/raidList.json');
+const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
