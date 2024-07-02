@@ -2,7 +2,8 @@ const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder
 const { raidList } = require('../../environment/raidList.json');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('일정추가')
         .setDescription('레이드 일정 추가')
         .addStringOption(option => 
@@ -33,7 +34,8 @@ module.exports = {
         .addStringOption(option =>
             option.setName("minute")
                 .setDescription("분")
-                .setRequired(true)),
+                .setRequired(true));
+    },
 
     async execute(interaction) {
         const client = interaction.client;

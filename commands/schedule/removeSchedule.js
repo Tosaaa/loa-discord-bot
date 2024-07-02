@@ -2,9 +2,11 @@ const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder
 const { raidList } = require('../../environment/raidList.json');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('일정삭제')
-        .setDescription('레이드 일정 삭제'),
+        .setDescription('레이드 일정 삭제');
+    },
 
     async execute(interaction) {
         const client = interaction.client;

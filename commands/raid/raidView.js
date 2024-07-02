@@ -4,21 +4,23 @@ const { classData } = require('../../environment/codex.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        const raidList = await loabot_db.getRaidList();
+        return new SlashCommandBuilder()
         .setName('레이드현황')
         .setDescription('이번 주 레이드 현황')
         .addStringOption(option => {
-            console.log(raidList);
             option.setName("레이드종류")
                 .setDescription("레이드 종류를 입력해주세요")
                 .setRequired(true)
-                .addChoices( // addStringOption에 async callback을 못 넣음. 아니 해결 방법이 없는데?
+                .addChoices(
                     ...(raidList.map(raid => {
                         return {name: raid.raid_name, value: JSON.stringify(raid)};
                     })),
                 )
             return option;
-            }),
+            });
+    },
         
     async execute(interaction) {
         const selectedRaid = JSON.parse(interaction.options.getString("레이드종류"));

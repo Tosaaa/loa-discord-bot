@@ -1,9 +1,11 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('사용법')
-        .setDescription('로아봇 사용법'),
+        .setDescription('로아봇 사용법');
+    },
     
     async execute(interaction) {
         const client = interaction.client;

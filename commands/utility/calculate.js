@@ -1,7 +1,8 @@
 const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('쌀')
         .setDescription('쌀산기')
         .addIntegerOption(option => 
@@ -16,7 +17,9 @@ module.exports = {
         .addIntegerOption(option => 
             option.setName('경매가')
                 .setDescription('경매 최저가')
-                .setRequired(true)),
+                .setRequired(true));
+    },
+    
     async execute(interaction) {
         const divider = interaction.options.getInteger('몇인');
         const auctionValue = interaction.options.getInteger('경매가');

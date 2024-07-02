@@ -24,46 +24,51 @@ const client = new Client({
 
 client.commands = new Collection();
 
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
+(async () => {
+	const foldersPath = path.join(__dirname, 'commands');
+	const commandFolders = fs.readdirSync(foldersPath);
 
-for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
-		const command = require(filePath);
-		// Set a new item in the Collection with the key as the command name and the value as the exported module
-		if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	for (const folder of commandFolders) {
+		const commandsPath = path.join(foldersPath, folder);
+		const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+		for (const file of commandFiles) {
+			const filePath = path.join(commandsPath, file);
+			const command = require(filePath);
+			// Set a new item in the Collection with the key as the command name and the value as the exported module
+			if ('data' in command && 'execute' in command) {
+				client.commands.set((await command.data()).name, command);
+			} else {
+				console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+			}
 		}
 	}
-}
 
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
-for (const file of eventFiles) {
-	const filePath = path.join(eventsPath, file);
-	const event = require(filePath);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+	const eventsPath = path.join(__dirname, 'events');
+	const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+	
+	for (const file of eventFiles) {
+		const filePath = path.join(eventsPath, file);
+		const event = require(filePath);
+		if (event.once) {
+			client.once(event.name, (...args) => event.execute(...args));
+		} else {
+			client.on(event.name, (...args) => event.execute(...args));
+		}
 	}
-}
 
-// logging
-client.on('debug', (log) => {
-	logger.info(log);
-});
-client.writeLog = (log) => logger.info(log);
+	// logging
+	client.on('debug', (log) => {
+		logger.info(log);
+	});
+	client.writeLog = (log) => logger.info(log);
+
+	// Log in to Discord with your client's token
+	client.login(token);
+})();
 
 
-// Log in to Discord with your client's token
-client.login(token);
+
+
  
 
 
@@ -85,10 +90,6 @@ client.init = async () => {
 client.initDB = async () => {
 	// await loabot_db.addRaidParticipant("프리미컬", "하멘");
 	// await loabot_db.completeRaidParticipant("프리미컬", "하멘");
-	let raidList = (await loabot_db.getRaidList()).map(raid => {
-		return {name: raid.raid_name, value: JSON.stringify(raid)};
-	});
-	console.log(raidList);
 
 	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
 	// loabot_db.pool.end(function(err){

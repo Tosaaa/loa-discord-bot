@@ -3,9 +3,11 @@ const fs = require('fs');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('레이드초기화')
-        .setDescription('레이드 현황 초기화'),
+        .setDescription('레이드 현황 초기화');
+    },
     
     async execute(interaction) {
 

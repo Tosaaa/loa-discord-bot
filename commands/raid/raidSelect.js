@@ -5,7 +5,8 @@ const { raidList } = require('../../environment/raidList.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('레이드선택')
         .setDescription('이번 주 레이드 선택')
         .addStringOption(option => 
@@ -16,7 +17,8 @@ module.exports = {
                     ...(raidList.map(raid => {
                         return {name: raid.raidName, value: JSON.stringify(raid)};
                     })),
-                )),
+                ));
+    },
 
     async execute(interaction) {
         const characterList = interaction.client.characterSync[interaction.user.username];

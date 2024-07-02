@@ -2,9 +2,11 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('데이터백업')
-        .setDescription('디버그용 데이터 백업 (개발자용)'),
+        .setDescription('디버그용 데이터 백업 (개발자용)');
+    },
     
     async execute(interaction) {
         if (interaction.user.username !== 'tosaaa') {

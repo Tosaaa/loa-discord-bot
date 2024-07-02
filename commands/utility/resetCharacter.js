@@ -3,9 +3,11 @@ const { API_KEY } = require('../../config.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
-    data: new SlashCommandBuilder()
+    data: async () => {
+        return new SlashCommandBuilder()
         .setName('캐릭터연동초기화')
-        .setDescription('본인의 연동된 캐릭터 초기화'),
+        .setDescription('본인의 연동된 캐릭터 초기화');
+    },
     
     async execute(interaction) {
         try {
