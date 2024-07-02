@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-// const { raidList } = require('../../environment/raidList.json');
 const { classData } = require('../../environment/codex.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
@@ -29,15 +28,16 @@ module.exports = {
         let embedList = [];
 
         try {
-            embedList.push(this.createEmbedByRaidName(interaction, selectedRaid.raid_name));
+            embedList.push(await this.createEmbedByRaidName(interaction, selectedRaid.raid_name));
             await interaction.reply({
                 content: result,
                 embeds: embedList
             });
         } catch (err) {
             interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
-                content: `레이드현황 실패: ${err}`,
+                content: `레이드현황 실패`,
                 ephemeral: true
             });
         }
@@ -59,6 +59,7 @@ module.exports = {
         embed.fields = [];
 
         const raidParticipant = await loabot_db.getRaidParticipant(raid_name);
+        console.log(raidParticipant);
         for (const discord_id of Object.keys(raidParticipant)) {
             //TODO: 딜, 폿 구분해서 출력하기 (클래스 DB 만들어야 할 듯)
             let DPSCount = 0;
