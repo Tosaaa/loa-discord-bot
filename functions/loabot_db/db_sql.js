@@ -206,7 +206,7 @@ module.exports = function () {
             return new Promise(async (resolve, reject) => {
                 try {
                     let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
-                    let character_ids = (await _do_query(`SELECT character_id FROM raid_participation WHERE raid_id = ?`, [raid_id]));
+                    let character_ids = (await _do_query(`SELECT character_id FROM raid_participation WHERE raid_id = ? AND status = '참여'`, [raid_id]));
                     let res = {};
                     for (const character_id of character_ids) {
                         let data = (await _do_query(`SELECT discord_id, character_name FROM characters WHERE character_id = ?`, [character_id.character_id]))[0];
@@ -228,7 +228,7 @@ module.exports = function () {
         resetRaidParticipant: () => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    await _do_query(`TRUNCATE FROM raid_participation`);
+                    await _do_query(`TRUNCATE TABLE raid_participation`);
                     resolve();
                 } catch (err) {
                     reject(err);
