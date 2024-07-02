@@ -209,11 +209,15 @@ module.exports = function () {
                     let character_ids = (await _do_query(`SELECT character_id FROM raid_participation WHERE raid_id = ?`, [raid_id]));
                     let res = {};
                     for (const character_id of character_ids) {
-                        let data = (await _do_query(`SELECT discord_id, character_name FROM characters WHERE character_id = ?`, [character_id]))[0];
+                        let data = (await _do_query(`SELECT discord_id, character_name FROM characters WHERE character_id = ?`, [character_id.character_id]))[0];
+                        if (!data) continue;
                         let discord_id = data.discord_id;
                         let character_name = data.character_name;
-                        if (!res[discord_id]) res[discord_id] = [];
-                        res.discord_id.push(character_name);
+                        console.log(res);
+                        if (!res[discord_id]) 
+                            res[discord_id] = [character_name];
+                        else 
+                            res.discord_id.push(character_name);
                     }
                     resolve(res);
                 } catch (err) {
