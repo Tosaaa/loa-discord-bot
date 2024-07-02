@@ -41,7 +41,9 @@ module.exports = {
                 await interaction.deleteReply();
                 return;
             }
-        } catch (e) {
+        } catch (err) {
+            interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.editReply({ content: '입력 시간 초과 (1분) 또는 에러 발생', components: [] });
         }
     },

@@ -37,7 +37,7 @@ module.exports = {
             interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
-                content: `레이드현황 실패`,
+                content: `레이드현황 실패: ${err}`,
                 ephemeral: true
             });
         }

@@ -33,6 +33,7 @@ module.exports = {
             });
         } catch (err) {
             interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
                 content: `캐릭터 연동 실패: ${err}`,
                 ephemeral: true
