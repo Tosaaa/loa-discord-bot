@@ -59,7 +59,6 @@ module.exports = {
         embed.fields = [];
 
         const raidParticipant = await loabot_db.getRaidParticipant(raid_name);
-        console.log(raidParticipant);
         for (const discord_id of Object.keys(raidParticipant)) {
             //TODO: 딜, 폿 구분해서 출력하기 (클래스 DB 만들어야 할 듯)
             let DPSCount = 0;

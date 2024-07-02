@@ -213,7 +213,6 @@ module.exports = function () {
                         if (!data) continue;
                         let discord_id = data.discord_id;
                         let character_name = data.character_name;
-                        console.log(res);
                         if (!res[discord_id]) 
                             res[discord_id] = [character_name];
                         else 
@@ -251,8 +250,8 @@ module.exports = function () {
         isSupport: (character_name) => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    let class_id = (await _db_query(`SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
-                    let is_support = (await _db_query(`SELECT is_support FROM classes WHERE class_id = ?`, [class_id]))[0]?.is_support;
+                    let class_id = (await _do_query(`SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
+                    let is_support = (await _do_query(`SELECT is_support FROM classes WHERE class_id = ?`, [class_id]))[0]?.is_support;
                     resolve(is_support);
                 } catch (err) {
                     reject(err);
