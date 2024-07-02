@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { classData } = require('../../environment/codex.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {

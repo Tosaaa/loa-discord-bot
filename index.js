@@ -221,6 +221,7 @@ client.initRole = async () => {
 }
 
 client.updateRole = async (interaction) =>  {
+	// 왜인지 모르겠는데 안됨
 	const allRolesMap = await interaction.guild.roles.fetch();
 	const allRoles = [...allRolesMap.values()];
 
@@ -228,17 +229,22 @@ client.updateRole = async (interaction) =>  {
 	const oldRoles = [];
 	const newRoles = [];
 
-	raidList.forEach(raid => {
-		const raidRole = allRoles.find(role => role.name === raid.raidName);
+	for (const raid of raidList) {
+		const raidRole = allRoles.find(role => role.name === raid.raid_name);
 		if (!raidRole) return;
 		
 		if([...member.roles.cache.keys()].includes(raidRole.id)) {
 			oldRoles.push(raidRole);
 		}
-		if (client.raidParticipant[raid.raidName][member.user.username]) {
-			newRoles.push(raidRole);
+
+		const characters = await loabot_db.getCharacters(member.user.username);
+		for (const character of characters) {
+			if (await loabot_db.isRaidParticipant(character[0], raid.raid_name)) {
+				newRoles.push(raidRole);
+				break;
+			}
 		}
-	});
+	}
 	
 	const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
 	const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));
