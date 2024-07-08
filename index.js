@@ -74,9 +74,9 @@ client.commands = new Collection();
 
 /********** functions **********/
 client.init = async () => {
-	client.initSchedule();
+	// client.initSchedule();
 	await client.initRole();
-	// await client.updateAllCharacter();
+	await loabot_db.updateAllCharacters();
 	// client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
 }
@@ -290,59 +290,5 @@ client.initRaidSelection = async (interaction) => {
 			ephemeral: true
 		});
 	}
-}
-
-client.updateCharacter = async (userName, playerNameList) => {
-	let characterList = [];
-	for (const playerName of playerNameList) {
-		characterList = characterList.concat(await parseCharacters(playerName));
-	}
-
-	if (!characterList) {
-		return false;
-	}
-	client.mainCharacter[userName] = playerNameList;
-	client.characterSync[userName] = characterList;
-	return true;
-}
-
-client.updateAllCharacter = async () => {
-	for (const userName of Object.keys(client.mainCharacter)) {
-		const playerNameList = client.mainCharacter[userName];
-		await client.updateCharacter(userName, playerNameList);
-	}
-}
-
-async function fetchCharacters(playerName) {
-	let options = {
-	  'method': 'get',
-	  'headers': {
-		'accept': 'application/json',
-		'authorization': 'bearer ' + API_KEY
-	  }
-	}
-	let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
-	return await res.json();
-}
-
-async function parseCharacters(playerName) {
-	let characters = await fetchCharacters(playerName);
-	if (!characters) return null;
-	characters = characters.filter(character => {
-		return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
-	});
-	characters.sort((a, b) => {
-	  return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
-	});
-  
-	let result = [];
-	for (let i = 0; i < characters.length; i++) {
-		let char = characters[i];
-		let CharacterName = char.CharacterName;
-		let CharacterClassName = char.CharacterClassName;
-		let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
-		result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
-	}
-	return result;
 }
 /********** functions **********/

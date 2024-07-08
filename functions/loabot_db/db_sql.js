@@ -58,11 +58,8 @@ module.exports = function () {
             if (!characterList[0]) reject("해당 캐릭터가 존재하지 않습니다.");
        
             try {
-                // 1. 유저 있나 확인 및 없으면 추가
-                let data = await _do_query(`SELECT discord_id FROM users WHERE discord_id = ?`, [discord_id]);
-                if (!data.length) {
-                    await _do_query(`INSERT INTO users VALUE (?, NULL)`, [discord_id]);
-                }
+                // 1. 유저 추가 (있으면 무시)
+                await _do_query(`INSERT IGNORE INTO users VALUE (?)`, [discord_id]);
 
                 for (const character of characterList) {
                     // 2. class_name 있나 확인
@@ -79,15 +76,17 @@ module.exports = function () {
                 }
 
                 // 4. 대표 캐릭터 업데이트
-                let main_character_name = playerNameList[0];
-                data = await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = ?`, [main_character_name]);
-                let _character_id = data[0]?.character_id;
-                let _discord_id = data[0]?.discord_id;
-                if (_discord_id !== discord_id) {
-                    reject(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
-                } else {
-                    let main_character_id = _character_id;
-                    await _do_query(`UPDATE users SET main_character_id = ? WHERE discord_id = ?`, [main_character_id, discord_id]);
+                await _do_query(`DELETE FROM main_characters WHERE discord_id = ?`, [discord_id]);
+                for (const main_character_name of playerNameList) {
+                    data = (await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = ?`, [main_character_name]))[0];
+                    let _character_id = data?.character_id;
+                    let _discord_id = data?.discord_id;
+                    if (_discord_id !== discord_id) {
+                        reject(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
+                    } else {
+                        let main_character_id = _character_id;
+                        await _do_query(`INSERT INTO main_characters (discord_id, character_id) VALUE (?, ?)`, [discord_id, main_character_id]);
+                    }
                 }
                 resolve();
             } catch (err) {
@@ -105,7 +104,7 @@ module.exports = function () {
                 if (!data.length) {
                     reject("연동된 캐릭터가 없습니다.");
                 } else {
-                    await _do_query(`UPDATE users SET main_character_id = NULL WHERE discord_id = ?`, [discord_id]);
+                    await _do_query(`DELETE FROM main_characters WHERE discord_id = ?`, [discord_id]);
                     await _do_query(`DELETE FROM characters WHERE discord_id = ?`, [discord_id]);
                     await _do_query(`DELETE FROM users WHERE discord_id = ?`, [discord_id]); // 근데 굳이 유저까지 지워야 할까?
                 }
@@ -274,6 +273,26 @@ module.exports = function () {
         });
     };
 
+    updateAllCharacters = () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let data = await _do_query(`SELECT * FROM users`);
+                for (const row of data) {
+                    let character_ids = (await _do_query(`SELECT character_id FROM main_characters WHERE discord_id = ?`, [row.discord_id]));
+                    let playerNameList = [];
+                    for (const row2 of character_ids) {
+                        let character_name = (await _do_query(`SELECT character_name FROM characters WHERE character_id = ?`, [row2.character_id]))[0]?.character_name;
+                        playerNameList.push(character_name);
+                    }
+                    await syncCharacter(row.discord_id, playerNameList);
+                }
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    };
+
     __TEMPLATE = (discord_id) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -299,6 +318,7 @@ module.exports = function () {
         resetRaidParticipant,
         getRaidList,
         isSupport,
+        updateAllCharacters,
         pool: pool
     };
 }();
