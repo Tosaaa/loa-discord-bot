@@ -22,7 +22,7 @@ module.exports = {
 
     async execute(interaction) {
         const characterList = await loabot_db.getCharacters(interaction.user.username);
-        if (!characterList) {
+        if (!characterList.length) {
             await interaction.reply({
                 content: "캐릭터 리스트 받아오기 실패. \n캐릭터 연동을 확인해주세요.",
                 ephemeral: true
