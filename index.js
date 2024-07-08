@@ -9,7 +9,6 @@ const loabot_db = require('./functions/loabot_db/db_sql.js');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
 const { emoji } = require('./DB/emoji.json');
-const { raidList } = require('./environment/raidList.json');
 
 // Create a new client instance
 const client = new Client({ 
@@ -75,44 +74,11 @@ client.commands = new Collection();
 
 /********** functions **********/
 client.init = async () => {
-	await client.initDB();
-	client.initRaidParticipant();
-	client.initMainCharacter();
-	client.initCharacterSync();
 	client.initSchedule();
-	client.dataLoad();
 	await client.initRole();
-	await client.updateAllCharacter();
+	// await client.updateAllCharacter();
 	// client.initRaidSelectionStartButton();
 	console.log("Bot initialized!");
-}
-
-client.initDB = async () => {
-	// await loabot_db.addRaidParticipant("프리미컬", "하멘");
-	// await loabot_db.completeRaidParticipant("프리미컬", "하멘");
-
-	// 아래는 pool을 끝내는 것으로, 원래 shutdown 전에 써야 함.
-	// loabot_db.pool.end(function(err){
-	//   if (err) console.log(err);
-	//   else {
-	// 	console.log('Connection pool has closed');
-	//   }
-	// });
-}
-
-client.initRaidParticipant = () => {
-	client.raidParticipant = {};
-	raidList.forEach(raid => {
-		client.raidParticipant[raid.raidName] = {};
-	});
-}
-
-client.initMainCharacter = () => {
-	client.mainCharacter = {};
-}
-
-client.initCharacterSync = () => {
-	client.characterSync = {};
 }
 
 client.initSchedule = () => {
@@ -120,59 +86,6 @@ client.initSchedule = () => {
 	client.resetFlag = false; // LOADAY 06:00 RESET
 	client.resetFlag2 = false; // LOADAY 10:10 CHARACTER SYNC
 	setInterval(client.checkTime, 5000);
-}
-
-// checks if playerName of userName participates raidName
-client.isPlayerRaidParticipant = (userName, playerName, raidName) => {
-	if (client.raidParticipant[raidName][userName] &&
-		client.raidParticipant[raidName][userName].find(x => x[0] === playerName))
-		return true;
-	else 
-		return false;
-}
-
-client.dataBackup = () => {
-	fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
-	fs.writeFileSync('DB/mainCharacter.json', JSON.stringify(client.mainCharacter));
-	fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
-	fs.writeFileSync('DB/schedule.json', JSON.stringify(client.schedule));
-}
-
-client.dataLoad = () => {
-	// when json file doesn't exist or is not valid, create new one
-	try {
-		client.raidParticipant = JSON.parse(fs.readFileSync('DB/raidParticipant.json').toString());
-
-		// When new raid is added to raidList.json, set the value of the new raid with empty object
-		// TODO: should handle when raid is deleted from raidList.json
-		raidList.forEach(raid => {
-			if (!Object.keys(client.raidParticipant).includes(raid.raidName)) {
-				client.raidParticipant[raid.raidName] = {};
-			}
-		});
-		
-	} catch (e) {
-		fs.writeFileSync('DB/raidParticipant.json', JSON.stringify(client.raidParticipant));
-	}
-	
-	try {
-		client.mainCharacter = JSON.parse(fs.readFileSync('DB/mainCharacter.json').toString());
-	} catch (e) {
-		fs.writeFileSync('DB/mainCharacter.json', JSON.stringify(client.mainCharacter));
-	}
-
-	try {
-		client.characterSync = JSON.parse(fs.readFileSync('DB/characterSync.json').toString());
-	} catch (e) {
-		fs.writeFileSync('DB/characterSync.json', JSON.stringify(client.characterSync));
-	}
-	
-
-	try {
-		client.schedule = JSON.parse(fs.readFileSync('DB/schedule.json').toString());
-	} catch (e) {
-		fs.writeFileSync('DB/schedule.json', JSON.stringify(client.schedule));
-	}
 }
 
 client.getEmoji = (emojiName) => {
@@ -292,9 +205,8 @@ client.checkTime = async () => {
 			newMachineDateObj.getHours() === 6 &&
 			newMachineDateObj.getMinutes() === 0) {
 		if (client.resetFlag === false) {
-			client.initRaidParticipant();
+			await loabot_db.resetRaidParticipant();
 			await client.initRole();
-			client.dataBackup();
 			client.resetFlag = true;
 			const channel = client.channels.cache.get(channelId);
 			await channel.send(`레이드 초기화 완료!`);
@@ -321,7 +233,7 @@ client.checkTime = async () => {
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 client.initRaidSelectionStartButton = async () => {
 	if (!client.messageId) {
-		const channel = client.channels.cache.get(channelIdRaidSelection); //<< Laboratory channel id
+		const channel = client.channels.cache.get(channelIdRaidSelection);
 		const confirm = new ButtonBuilder()
 			.setCustomId('raidSelectionStartButton')
 			.setLabel('레이드 선택 시작')
