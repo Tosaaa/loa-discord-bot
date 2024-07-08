@@ -221,13 +221,15 @@ client.initRole = async () => {
 }
 
 client.updateRole = async (interaction) =>  {
-	// 왜인지 모르겠는데 안됨
 	const allRolesMap = await interaction.guild.roles.fetch();
 	const allRoles = [...allRolesMap.values()];
+
+	const raidList = await loabot_db.getRaidList();
 
 	const member = interaction.member;
 	const oldRoles = [];
 	const newRoles = [];
+
 
 	for (const raid of raidList) {
 		const raidRole = allRoles.find(role => role.name === raid.raid_name);
