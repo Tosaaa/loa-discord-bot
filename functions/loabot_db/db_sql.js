@@ -104,6 +104,10 @@ module.exports = function () {
                 if (!data.length) {
                     reject("연동된 캐릭터가 없습니다.");
                 } else {
+                    let data = (await _do_query(`SELECT character_id FROM characters WHERE discord_id = ?`, [discord_id]));
+                    for (const row of data) {
+                        await _do_query(`DELETE FROM raid_participation WHERE character_id = ?`, [row.character_id]);
+                    }
                     await _do_query(`DELETE FROM main_characters WHERE discord_id = ?`, [discord_id]);
                     await _do_query(`DELETE FROM characters WHERE discord_id = ?`, [discord_id]);
                     await _do_query(`DELETE FROM users WHERE discord_id = ?`, [discord_id]); // 근데 굳이 유저까지 지워야 할까?

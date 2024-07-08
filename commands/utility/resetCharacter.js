@@ -12,6 +12,7 @@ module.exports = {
     async execute(interaction) {
         try {
             await loabot_db.resetCharacter(interaction.user.username);
+            await interaction.client.updateRole(interaction);
             await interaction.reply({
                 content: "캐릭터 연동 초기화 완료!",
                 ephemeral: true
