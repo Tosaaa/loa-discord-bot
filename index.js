@@ -76,7 +76,7 @@ client.commands = new Collection();
 client.init = async () => {
 	// client.initSchedule();
 	await client.initRole();
-	await client.initInteractions();
+	await client.initHandler();
 	await loabot_db.updateAllCharacters();
 	console.log("Bot initialized!");
 }
@@ -167,9 +167,9 @@ client.updateRole = async (interaction) =>  {
 	roleToRemove.forEach(role => member.roles.remove(role));
 }
 
-client.initInteractions = async () => {
+client.initHandler = async () => {
 	// await client.initRaidSelectionStartButton();
-	client.raidSelectionHandler = require('./functions/interactions/raidSelectionHandler.js');
+	client.raidSelectionHandler = require('./functions/raidSelectionHandler.js');
 };
 
 client.checkTime = async () => {
