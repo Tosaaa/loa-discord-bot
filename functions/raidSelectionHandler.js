@@ -1,4 +1,28 @@
-module.exports = async (interaction) => {
+const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { channelId, channelIdLaboratory, channelIdRaidSelection } = require('../config.json');
+const loabot_db = require('./loabot_db/db_sql.js');
+
+module.exports = {
+    initRaidSelectionStartButton: async function() {
+        if (!this.messageId) {
+            const channel = this.channels.cache.get(channelIdLaboratory);
+            const confirm = new ButtonBuilder()
+                .setCustomId('raidSelectionStartButton')
+                .setLabel('레이드 선택 시작')
+                .setStyle(ButtonStyle.Success);
+    
+            const row = new ActionRowBuilder()
+                .addComponents(confirm);
+            this.messageId = await channel.send({
+                content: `이번 주 레이드 선택`,
+                components: [row]
+            });
+        } else {
+            return;
+        }
+    },
+
+    raidSelectionHandler: async function(interaction) {
         const characterList = await loabot_db.getCharacters(interaction.user.username);
         if (!characterList.length) {
             await interaction.reply({
@@ -45,3 +69,4 @@ module.exports = async (interaction) => {
             });
         }
     }
+}

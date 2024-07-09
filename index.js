@@ -75,8 +75,9 @@ client.commands = new Collection();
 /********** functions **********/
 client.init = async () => {
 	// client.initSchedule();
+	initHandler(client);
+	// await client.initRaidSelectionStartButton();
 	await client.initRole();
-	await client.initHandler();
 	await loabot_db.updateAllCharacters();
 	console.log("Bot initialized!");
 }
@@ -97,80 +98,25 @@ client.getEmoji = (emojiName) => {
 	return emojiString;
 }
 
-client.initRole = async () => {
-	const allMembersMap = await client.guilds.cache.get(guildId).members.fetch();
-	const allMembers = [...allMembersMap.values()];
-	const allRolesMap = await client.guilds.cache.get(guildId).roles.fetch();
-	const allRoles = [...allRolesMap.values()];
-
-	const raidList = await loabot_db.getRaidList();
-
-	allMembers.forEach(async member => {
-		const oldRoles = [];
-		const newRoles = [];
-
-		for (const raid of raidList) {
-			const raidRole = allRoles.find(role => role.name === raid.raid_name);
-			if (!raidRole) return;
-			
-			if([...member.roles.cache.keys()].includes(raidRole.id)) {
-				oldRoles.push(raidRole);
-			}
-
-			const characters = await loabot_db.getCharacters(member.user.username);
-			for (const character of characters) {
-				if (await loabot_db.isRaidParticipant(character[0], raid.raid_name)) {
-					newRoles.push(raidRole);
-					break;
-				}
-			}
-		}
-		
-		const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
-		const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));
-		roleToAdd.forEach(role => member.roles.add(role));
-		roleToRemove.forEach(role => member.roles.remove(role));
-	});
+function initHandler(client) {
+	initRoleHandler(client);
+	initRaidSelectionHandler(client);
 }
 
-client.updateRole = async (interaction) =>  {
-	const allRolesMap = await interaction.guild.roles.fetch();
-	const allRoles = [...allRolesMap.values()];
-
-	const raidList = await loabot_db.getRaidList();
-
-	const member = interaction.member;
-	const oldRoles = [];
-	const newRoles = [];
-
-
-	for (const raid of raidList) {
-		const raidRole = allRoles.find(role => role.name === raid.raid_name);
-		if (!raidRole) return;
-		
-		if([...member.roles.cache.keys()].includes(raidRole.id)) {
-			oldRoles.push(raidRole);
-		}
-
-		const characters = await loabot_db.getCharacters(member.user.username);
-		for (const character of characters) {
-			if (await loabot_db.isRaidParticipant(character[0], raid.raid_name)) {
-				newRoles.push(raidRole);
-				break;
-			}
-		}
-	}
-	
-	const roleToAdd = newRoles.filter(newRole => !oldRoles.map(oldRole => oldRole.id).includes(newRole.id));
-	const roleToRemove = oldRoles.filter(oldRole => !newRoles.map(newRole => newRole.id).includes(oldRole.id));
-	roleToAdd.forEach(role => member.roles.add(role));
-	roleToRemove.forEach(role => member.roles.remove(role));
+function initRoleHandler(client) {
+	const { initRole, updateRole } = require('./functions/roleHandler.js');
+	client.initRole = initRole.bind(client);
+	client.updateRole = updateRole;
 }
 
-client.initHandler = async () => {
-	// await client.initRaidSelectionStartButton();
-	client.raidSelectionHandler = require('./functions/raidSelectionHandler.js');
-};
+function initRaidSelectionHandler(client)  {
+	const { initRaidSelectionStartButton, raidSelectionHandler } = require('./functions/raidSelectionHandler.js');
+	client.initRaidSelectionStartButton = initRaidSelectionStartButton.bind(client);
+	client.raidSelectionHandler = raidSelectionHandler;
+}
+
+
+
 
 client.checkTime = async () => {
 	// IMPORTANT: github codespace follow utc+0 timezone, but raspberry pi timezone is set to utc+9
@@ -234,26 +180,4 @@ client.checkTime = async () => {
 	}
 	///// LOADAY /////
 }
-
-
-const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-client.initRaidSelectionStartButton = async () => {
-	if (!client.messageId) {
-		const channel = client.channels.cache.get(channelIdRaidSelection);
-		const confirm = new ButtonBuilder()
-			.setCustomId('raidSelectionStartButton')
-			.setLabel('레이드 선택 시작')
-			.setStyle(ButtonStyle.Success);
-
-		const row = new ActionRowBuilder()
-			.addComponents(confirm);
-		client.messageId = await channel.send({
-			content: `이번 주 레이드 선택`,
-			components: [row]
-		});
-	} else {
-		return;
-	}
-};
-
 /********** functions **********/
