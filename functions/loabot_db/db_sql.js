@@ -142,7 +142,7 @@ module.exports = function () {
             try {   
                 let character_id = (await _do_query(`SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
                 let raid_id = (await _do_query(`SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
-                let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
+                let status = (await _do_query(`SELECT status FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]))[0]?.status;
                 if (status === "완료") {                        
                     await _do_query(`UPDATE raid_participation SET status = '참여' WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
                 } else if (status === "참여") {

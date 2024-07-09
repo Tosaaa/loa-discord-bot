@@ -1,4 +1,5 @@
 const { Events } = require('discord.js');
+const loabot_db = require('../functions/loabot_db/db_sql.js');
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -27,20 +28,17 @@ module.exports = {
 			}
 		} else if (interaction.isButton()) {
 			if (interaction.customId === 'raidSelectionStartButton') {
-				await interaction.client.initRaidSelection(interaction);
+				await interaction.client.raidSelectionHandler(interaction);
 			}
 		} else if (interaction.isStringSelectMenu()) {
 			if (interaction.customId.includes('newPlayerSelection')) {
 				const selectedPlayers = interaction.values.map(v => JSON.parse(v));
 				const selectedRaidName = interaction.customId.replace("newPlayerSelection", "");
-                // delete entry when empty
-                if (selectedPlayers.length === 0) {
-                    delete interaction.client.raidParticipant[selectedRaidName][interaction.user.username];
-                } else {
-                    interaction.client.raidParticipant[selectedRaidName][interaction.user.username] = selectedPlayers;
+				await loabot_db.deleteAllRaidParticipant(interaction.user.username, selectedRaidName);
+                for (const character of selectedPlayers) {
+                    await loabot_db.addRaidParticipant(character[0], selectedRaidName);
                 }
-                interaction.client.updateRole(interaction);
-                interaction.client.dataBackup();
+                await interaction.client.updateRole(interaction);
 				
 				const row = interaction.message.components[0];
 				row.components[0].data.options.forEach(option => {
