@@ -74,19 +74,11 @@ client.commands = new Collection();
 
 /********** functions **********/
 client.init = async () => {
-	// client.initSchedule();
 	initHandler(client);
 	// await client.initRaidSelectionStartButton();
 	await client.initRole();
 	await loabot_db.updateAllCharacters();
 	console.log("Bot initialized!");
-}
-
-client.initSchedule = () => {
-	client.schedule = {};
-	client.resetFlag = false; // LOADAY 06:00 RESET
-	client.resetFlag2 = false; // LOADAY 10:10 CHARACTER SYNC
-	setInterval(client.checkTime, 5000);
 }
 
 client.getEmoji = (emojiName) => {
@@ -101,6 +93,7 @@ client.getEmoji = (emojiName) => {
 function initHandler(client) {
 	initRoleHandler(client);
 	initRaidSelectionHandler(client);
+	initScheculeHandler(client);
 }
 
 function initRoleHandler(client) {
@@ -115,69 +108,14 @@ function initRaidSelectionHandler(client)  {
 	client.raidSelectionHandler = raidSelectionHandler;
 }
 
+function initScheculeHandler(client) {
+	const { getScheduleJob, doResetRaid, doUpdateAllCharacters } = require('./functions/scheduleHandler.js');
+	// client.resetRaidScheduler = getScheduleJob('0 0 6 * * 3', doResetRaid.bind(client));
+	// client.updateAllCharacters = getScheduleJob('0 0 0 * * *', doUpdateAllCharacters);
 
-
-
-client.checkTime = async () => {
-	// IMPORTANT: github codespace follow utc+0 timezone, but raspberry pi timezone is set to utc+9
-	let machineDateObj = new Date();
-    let machineDate = machineDateObj.toLocaleDateString();
-    let machineMinutes = machineDateObj.getMinutes();
-    let machineHours = machineDateObj.getHours();
-
-	// uncomment in github codespace
-	// machineHours += 9;
-
-	let newMachineDateObj = new Date(`${machineDate} ${machineHours}:${machineMinutes}`);
-	let machineTime = newMachineDateObj.getTime();
-
-	///// SCHEDULE /////
-	let foundSchedule  = [];
-	for (const scheduleKey of Object.keys(client.schedule)) {
-		if (client.schedule[scheduleKey].rawTime <= machineTime) {
-			const channel = client.channels.cache.get(channelId);
-			// const channel = client.channels.cache.get(channelIdLaboratory); << Laboratory channel id
-			const roleName = `${scheduleKey.split('|')[0]}`;
-			const roleId = client.guilds.cache.get(guildId).roles.cache.find(r => r.name === roleName) ?? roleName;
-			await channel.send(`[${roleId}]: ${client.schedule[scheduleKey].parsedTime} 알림!`);
-			foundSchedule.push(scheduleKey);
-		}
-	}
-
-	for (const scheduleKey of foundSchedule) {
-		delete client.schedule[scheduleKey];
-		client.dataBackup();
-	}
-	///// SCHEDULE /////
-
-	///// LOADAY /////
-	const DAY_ARR = ['일', '월', '화', '수', '목', '금', '토'];
-	if (DAY_ARR[newMachineDateObj.getDay()] === '수' &&
-			newMachineDateObj.getHours() === 6 &&
-			newMachineDateObj.getMinutes() === 0) {
-		if (client.resetFlag === false) {
-			await loabot_db.resetRaidParticipant();
-			await client.initRole();
-			client.resetFlag = true;
-			const channel = client.channels.cache.get(channelId);
-			await channel.send(`레이드 초기화 완료!`);
-		}
-	} else {
-		client.resetFlag = false;
-	}
-
-	// API online된 10시 10분에 캐릭터 정보 업데이트
-	if (DAY_ARR[newMachineDateObj.getDay()] === '수' &&
-			newMachineDateObj.getHours() === 10 &&
-			newMachineDateObj.getMinutes() === 10) {
-		if (client.resetFlag2 === false) {
-			await client.updateAllCharacter();
-			client.dataBackup();
-			client.resetFlag2 = true;
-		}
-	} else {
-		client.resetFlag2 = false;
-	}
-	///// LOADAY /////
+	// github codespace: hour -= 9
+	// const timeZoneOffset = (new Date()).getTimezoneOffset() / 60;
+	client.resetRaidScheduler = getScheduleJob(`0 0 21 * * 2`, doResetRaid.bind(client));
+	client.updateAllCharactersScheduler = getScheduleJob(`0 0 15 * * *`, doUpdateAllCharacters);
 }
 /********** functions **********/
