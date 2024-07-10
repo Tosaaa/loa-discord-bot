@@ -1,37 +1,46 @@
 const pool = require('./db_connect');
 const { API_KEY } = require('../../config.json');
 
-async function fetchCharacters(playerName) {
-	let options = {
-	  'method': 'get',
-	  'headers': {
-		'accept': 'application/json',
-		'authorization': 'bearer ' + API_KEY
-	  }
-	}
-	let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
-	return await res.json();
+function fetchCharacters(playerName) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let options = {
+                'method': 'get',
+                'headers': {
+                    'accept': 'application/json',
+                    'authorization': 'bearer ' + API_KEY
+                }
+                }
+            let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
+            if (res.status === 503) //true로 테스트
+                throw new Error('Lostark API server is under maintenance');
+            else
+                resolve(await res.json());
+        } catch (err) {
+            reject(err);
+        }
+    });
 }
 
 async function parseCharacters(playerName) {
-	let characters = await fetchCharacters(playerName);
-	if (!characters) return null;
-	characters = characters.filter(character => {
-		return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
-	});
-	characters.sort((a, b) => {
-	  return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
-	});
-  
-	let result = [];
-	for (let i = 0; i < characters.length; i++) {
-		let char = characters[i];
-		let CharacterName = char.CharacterName;
-		let CharacterClassName = char.CharacterClassName;
-		let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
-		result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
-	}
-	return result;
+    let characters = await fetchCharacters(playerName);
+    if (!characters) return null;
+    characters = characters.filter(character => {
+        return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
+    });
+    characters.sort((a, b) => {
+        return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
+    });
+    
+    let result = [];
+    for (let i = 0; i < characters.length; i++) {
+        let char = characters[i];
+        let CharacterName = char.CharacterName;
+        let CharacterClassName = char.CharacterClassName;
+        let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
+        result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
+    }
+    return result;	
 }
 
 
@@ -52,20 +61,20 @@ module.exports = function () {
 
     syncCharacter = (discord_id, playerNameList) => {
         return new Promise(async (resolve, reject) => {
-            let characterList = [];
-            for (const playerName of playerNameList) 
-                characterList = characterList.concat(await parseCharacters(playerName));
-            if (!characterList[0]) reject("해당 캐릭터가 존재하지 않습니다.");
-       
             try {
+                let characterList = [];
+                for (const playerName of playerNameList) 
+                    characterList = characterList.concat(await parseCharacters(playerName));
+                if (!characterList[0]) reject("해당 캐릭터가 존재하지 않습니다.");
+        
                 // 1. 유저 추가 (있으면 무시)
                 await _do_query(`INSERT IGNORE INTO users VALUE (?)`, [discord_id]);
-
+    
                 for (const character of characterList) {
                     // 2. class_name 있나 확인
                     let class_id = (await _do_query(`SELECT class_id FROM classes WHERE class_name = ?`, [character[1]]))[0]?.class_id;
                     if (!class_id) reject("클래스 조회 불가, 개발자에게 문의해주세요.");
-
+    
                     // 3. characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
                     data = await _do_query(`SELECT * FROM characters WHERE character_name = ?`, [character[0]]);
                     if (!data.length) {
@@ -74,7 +83,7 @@ module.exports = function () {
                         await _do_query(`UPDATE characters SET item_level = ? WHERE character_name = ?`, [character[2], character[0]]);
                     }
                 }
-
+    
                 // 4. 대표 캐릭터 업데이트
                 await _do_query(`DELETE FROM main_characters WHERE discord_id = ?`, [discord_id]);
                 for (const main_character_name of playerNameList) {
@@ -90,8 +99,7 @@ module.exports = function () {
                 }
                 resolve();
             } catch (err) {
-                console.log(err);
-                reject(err);
+                reject (err);
             }
         });
     };
@@ -292,7 +300,9 @@ module.exports = function () {
                 }
                 resolve();
             } catch (err) {
-                reject(err);
+                // reject(err);
+                console.log(err);
+                // 일단 에러 묻어버리기
             }
         });
     };
