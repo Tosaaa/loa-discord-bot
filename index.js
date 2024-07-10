@@ -65,13 +65,6 @@ client.commands = new Collection();
 	client.login(token);
 })();
 
-
-
-
- 
-
-
-
 /********** functions **********/
 client.init = async () => {
 	initHandler(client);
@@ -110,12 +103,12 @@ function initRaidSelectionHandler(client)  {
 
 function initScheculeHandler(client) {
 	const { getScheduleJob, doResetRaid, doUpdateAllCharacters } = require('./functions/scheduleHandler.js');
-	// client.resetRaidScheduler = getScheduleJob('0 0 6 * * 3', doResetRaid.bind(client));
-	// client.updateAllCharacters = getScheduleJob('0 0 0 * * *', doUpdateAllCharacters);
+	client.resetRaidScheduler = getScheduleJob('0 0 6 * * 3', doResetRaid.bind(client));
+	client.updateAllCharacters = getScheduleJob('0 0 0 * * *', doUpdateAllCharacters);
 
 	// github codespace: hour -= 9
 	// const timeZoneOffset = (new Date()).getTimezoneOffset() / 60;
-	client.resetRaidScheduler = getScheduleJob(`0 0 21 * * 2`, doResetRaid.bind(client));
-	client.updateAllCharactersScheduler = getScheduleJob(`0 0 15 * * *`, doUpdateAllCharacters);
+	// client.resetRaidScheduler = getScheduleJob(`0 0 21 * * 2`, doResetRaid.bind(client));
+	// client.updateAllCharactersScheduler = getScheduleJob(`0 0 15 * * *`, doUpdateAllCharacters);
 }
 /********** functions **********/
