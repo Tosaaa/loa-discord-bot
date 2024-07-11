@@ -67,11 +67,17 @@ client.commands = new Collection();
 
 /********** functions **********/
 client.init = async () => {
-	initHandler(client);
-	// await client.initRaidSelectionStartButton();
-	await client.initRole();
-	await loabot_db.updateAllCharacters();
-	console.log("Bot initialized!");
+	try {
+		initHandler(client);
+		// await client.initRaidSelectionStartButton();
+		await client.initRole();
+		await loabot_db.updateAllCharacters();
+		console.log("Bot initialized!");
+	} catch (err) {
+		logger.error(err);
+		console.error(err);
+		process.exit();
+	}
 }
 
 client.getEmoji = (emojiName) => {

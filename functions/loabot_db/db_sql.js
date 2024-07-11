@@ -1,46 +1,50 @@
+const logger = require('../../logger.js');
 const pool = require('./db_connect');
 const { API_KEY } = require('../../config.json');
 
 function fetchCharacters(playerName) {
     return new Promise(async (resolve, reject) => {
-        try {
-            let options = {
-                'method': 'get',
-                'headers': {
-                    'accept': 'application/json',
-                    'authorization': 'bearer ' + API_KEY
-                }
-                }
-            let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
-            if (res.status === 503) //true로 테스트
-                throw new Error('Lostark API server is under maintenance');
-            else
-                resolve(await res.json());
-        } catch (err) {
-            reject(err);
+        let options = {
+            'method': 'get',
+            'headers': {
+                'accept': 'application/json',
+                'authorization': 'bearer ' + API_KEY
+            }
+            }
+        let res = await fetch(`https://developer-lostark.game.onstove.com/characters/${playerName}/siblings`, options);
+        if (res.status === 503) {
+            reject("fetchCharacters: 로스트아크 API 서버가 응답이 없습니다.")
+        } else {
+            resolve(await res.json());
         }
     });
 }
 
+// 실패하면 빈 배열 [] 리턴, 사용자는 에러 처리 안 해도 됨.
 async function parseCharacters(playerName) {
-    let characters = await fetchCharacters(playerName);
-    if (!characters) return null;
-    characters = characters.filter(character => {
-        return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
-    });
-    characters.sort((a, b) => {
-        return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
-    });
-    
-    let result = [];
-    for (let i = 0; i < characters.length; i++) {
-        let char = characters[i];
-        let CharacterName = char.CharacterName;
-        let CharacterClassName = char.CharacterClassName;
-        let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
-        result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
+    try {
+        let characters = await fetchCharacters(playerName);
+        if (!characters) throw new Error("캐릭터 조회 실패");
+        characters = characters.filter(character => {
+            return parseFloat((character.ItemAvgLevel).replaceAll(",", "")) > 0;
+        });
+        characters.sort((a, b) => {
+            return parseFloat((b.ItemAvgLevel).replaceAll(",", "")) - parseFloat((a.ItemAvgLevel).replaceAll(",", ""))
+        });
+        
+        let result = [];
+        for (let i = 0; i < characters.length; i++) {
+            let char = characters[i];
+            let CharacterName = char.CharacterName;
+            let CharacterClassName = char.CharacterClassName;
+            let ItemAvgLevel = parseFloat((char.ItemAvgLevel).replaceAll(",",""));
+            result.push([CharacterName, CharacterClassName, ItemAvgLevel]);
+        }
+        return result;	
+    } catch (err) {
+        logger.error(err);
+        return [];
     }
-    return result;	
 }
 
 
@@ -58,48 +62,55 @@ module.exports = function () {
     };
 
     ///////////////////////////////////
-
+    // 각 함수는 실패할 수 있고, 사용자는 에러 처리를 해줘야 함.
     syncCharacter = (discord_id, playerNameList) => {
         return new Promise(async (resolve, reject) => {
             try {
+                // TRANSACTION 쓰면 비동기 처리하느라 race condition으로 중간에 멈춤 해결 필요
+                // await _do_query(`START TRANSACTION`);
                 let characterList = [];
                 for (const playerName of playerNameList) 
                     characterList = characterList.concat(await parseCharacters(playerName));
-                if (!characterList[0]) reject("해당 캐릭터가 존재하지 않습니다.");
+                if (!characterList.length) reject("해당 캐릭터가 존재하지 않습니다.");
         
-                // 1. 유저 추가 (있으면 무시)
+                // 유저 추가 (있으면 무시)
                 await _do_query(`INSERT IGNORE INTO users VALUE (?)`, [discord_id]);
-    
                 for (const character of characterList) {
-                    // 2. class_name 있나 확인
+                    console.log(character);
+                    // class_name 있나 확인
                     let class_id = (await _do_query(`SELECT class_id FROM classes WHERE class_name = ?`, [character[1]]))[0]?.class_id;
-                    if (!class_id) reject("클래스 조회 불가, 개발자에게 문의해주세요.");
-    
-                    // 3. characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
+                    if (!class_id) reject("클래스 조회 불가");
+                    console.log(1);
+                    // characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
                     data = await _do_query(`SELECT * FROM characters WHERE character_name = ?`, [character[0]]);
+                    console.log(2);
                     if (!data.length) {
                         await _do_query(`INSERT INTO characters (discord_id, character_name, class_id, item_level) VALUE (?, ?, ?, ?)`, [discord_id, character[0], class_id, character[2]]);
+                        console.log(3);
                     } else {
                         await _do_query(`UPDATE characters SET item_level = ? WHERE character_name = ?`, [character[2], character[0]]);
+                        console.log(4);
                     }
+                    console.log(5);
                 }
-    
-                // 4. 대표 캐릭터 업데이트
+                // 대표 캐릭터 추가
                 await _do_query(`DELETE FROM main_characters WHERE discord_id = ?`, [discord_id]);
                 for (const main_character_name of playerNameList) {
                     data = (await _do_query(`SELECT character_id, discord_id FROM characters WHERE character_name = ?`, [main_character_name]))[0];
                     let _character_id = data?.character_id;
                     let _discord_id = data?.discord_id;
-                    if (_discord_id !== discord_id) {
+                    if (_discord_id &&_discord_id !== discord_id) {
                         reject(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
                     } else {
                         let main_character_id = _character_id;
-                        await _do_query(`INSERT INTO main_characters (discord_id, character_id) VALUE (?, ?)`, [discord_id, main_character_id]);
+                        await _do_query(`INSERT IGNORE INTO main_characters (discord_id, character_id) VALUE (?, ?)`, [discord_id, main_character_id]);
                     }
                 }
+                // await _do_query("COMMIT");
                 resolve();
             } catch (err) {
-                reject (err);
+                // await _do_query("ROLLBACK");
+                reject(err);
             }
         });
     };
@@ -297,17 +308,16 @@ module.exports = function () {
                         playerNameList.push(character_name);
                     }
                     await syncCharacter(row.discord_id, playerNameList);
+                    console.log("UAC", row.discord_id, playerNameList);
                 }
                 resolve();
             } catch (err) {
-                // reject(err);
-                console.log(err);
-                // 일단 에러 묻어버리기
+                reject(err);
             }
         });
     };
 
-    __TEMPLATE = (discord_id) => {
+    __TEMPLATE = () => {
         return new Promise(async (resolve, reject) => {
             try {
                 resolve();
