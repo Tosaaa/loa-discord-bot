@@ -81,14 +81,14 @@ module.exports = function () {
                 let characterList = [];
                 for (const playerName of playerNameList) 
                     characterList = characterList.concat(await parseCharacters(playerName));
-                if (!characterList.length) reject("해당 캐릭터가 존재하지 않습니다.");
+                if (!characterList.length) throw new Error("해당 캐릭터가 존재하지 않습니다.");
         
                 // 유저 추가 (있으면 무시)
                 await _do_query(con, `INSERT IGNORE INTO users VALUE (?)`, [discord_id]);
                 for await (const character of characterList) {
                     // class_name 있나 확인
                     let class_id = (await _do_query(con, `SELECT class_id FROM classes WHERE class_name = ?`, [character[1]]))[0]?.class_id;
-                    if (!class_id) reject("클래스 조회 불가");
+                    if (!class_id) throw new Error("클래스 조회 불가");
                     // characters에 있나 확인, 없으면 추가하고 있으면 템렙 업데이트
                     data = await _do_query(con, `SELECT * FROM characters WHERE character_name = ?`, [character[0]]);
                     if (!data.length) {
@@ -104,7 +104,7 @@ module.exports = function () {
                     let _character_id = data?.character_id;
                     let _discord_id = data?.discord_id;
                     if (_discord_id &&_discord_id !== discord_id) {
-                        reject(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
+                        throw new Error(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
                     } else {
                         let main_character_id = _character_id;
                         await _do_query(con, `INSERT IGNORE INTO main_characters (discord_id, character_id) VALUE (?, ?)`, [discord_id, main_character_id]);
