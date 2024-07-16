@@ -59,7 +59,6 @@ client.commands = new Collection();
 	client.on('debug', (log) => {
 		logger.info(log);
 	});
-	client.writeLog = (log) => logger.info(log);
 
 	// Log in to Discord with your client's token
 	client.login(token);
