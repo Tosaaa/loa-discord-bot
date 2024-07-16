@@ -1,5 +1,6 @@
 const { Events } = require('discord.js');
 const loabot_db = require('../functions/loabot_db/db_sql.js');
+const logger = require('../logger.js');
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -32,27 +33,37 @@ module.exports = {
 			}
 		} else if (interaction.isStringSelectMenu()) {
 			if (interaction.customId.includes('newPlayerSelection')) {
-				const selectedPlayers = interaction.values.map(v => JSON.parse(v));
-				const selectedRaidName = interaction.customId.replace("newPlayerSelection", "");
-				await loabot_db.deleteAllRaidParticipant(interaction.user.username, selectedRaidName);
-                for (const character of selectedPlayers) {
-                    await loabot_db.addRaidParticipant(character[0], selectedRaidName);
-                }
-                await interaction.client.updateRole(interaction);
-				
-				const row = interaction.message.components[0];
-				row.components[0].data.options.forEach(option => {
-					if (interaction.values.includes(option.value)) {
-						option.default = true;
-					} else {
-						option.default = false;
+				try {
+					const selectedPlayers = interaction.values.map(v => JSON.parse(v));
+					const selectedRaidName = interaction.customId.replace("newPlayerSelection", "");
+					await loabot_db.deleteAllRaidParticipant(interaction.user.username, selectedRaidName);
+					for (const character of selectedPlayers) {
+						await loabot_db.addRaidParticipant(character[0], selectedRaidName);
 					}
-				});
-				
-                await interaction.update({
-                    content: `${selectedRaidName}에 참여하는 캐릭터 선택`,
-					components: [row]
-                });
+					await interaction.client.updateRole(interaction);
+					
+					const row = interaction.message.components[0];
+					row.components[0].data.options.forEach(option => {
+						if (interaction.values.includes(option.value)) {
+							option.default = true;
+						} else {
+							option.default = false;
+						}
+					});
+					
+					await interaction.update({
+						content: `${selectedRaidName}에 참여하는 캐릭터 선택`,
+						components: [row]
+					});
+				} catch (err) {
+					logger.error(err);
+					console.error(err);
+					await interaction.reply({
+						content: `레이드선택 실패: ${err}`,
+						ephemeral: true
+					});
+					
+				}
 			}
 		}
 	},

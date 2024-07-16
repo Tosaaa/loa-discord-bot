@@ -1,40 +1,45 @@
 const { SlashCommandBuilder } = require('discord.js');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
+const logger = require('../../logger.js');
 
 module.exports = {
     data: async () => {
-        const raidList = await loabot_db.getRaidList();
-        return new SlashCommandBuilder()
-        .setName('레이드현황')
-        .setDescription('이번 주 레이드 현황')
-        .addStringOption(option => {
-            option.setName("레이드종류")
-                .setDescription("레이드 종류를 입력해주세요")
-                .setRequired(true)
-                .addChoices(
-                    ...(raidList.map(raid => {
-                        return {name: raid.raid_name, value: JSON.stringify(raid)};
-                    })),
-                )
-            return option;
-            });
+        try {
+            const raidList = await loabot_db.getRaidList();
+            return new SlashCommandBuilder()
+            .setName('레이드현황')
+            .setDescription('이번 주 레이드 현황')
+            .addStringOption(option => {
+                option.setName("레이드종류")
+                    .setDescription("레이드 종류를 입력해주세요")
+                    .setRequired(true)
+                    .addChoices(
+                        ...(raidList.map(raid => {
+                            return {name: raid.raid_name, value: JSON.stringify(raid)};
+                        })),
+                    )
+                return option;
+                });
+        } catch (err) {
+            logger.error(err);
+            console.error(err);
+        }
     },
         
     async execute(interaction) {
-        const selectedRaid = JSON.parse(interaction.options.getString("레이드종류"));
-
-        let result = `**[이번 주 레이드 현황]**\n`;
-        let embedList = [];
-
         try {
+            const selectedRaid = JSON.parse(interaction.options.getString("레이드종류"));
+
+            let result = `**[이번 주 레이드 현황]**\n`;
+            let embedList = [];
             embedList.push(await this.createEmbedByRaidName(interaction, selectedRaid.raid_name));
             await interaction.reply({
                 content: result,
                 embeds: embedList
             });
         } catch (err) {
-            interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
-            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            logger.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
                 content: `레이드현황 실패: ${err}`,
                 ephemeral: true

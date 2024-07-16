@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { API_KEY } = require('../../config.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
@@ -18,10 +17,10 @@ module.exports = {
                 ephemeral: true
             });
         } catch (err) {
-            interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
-            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            logger.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
-                content: `캐릭터 연동 초기화 실패: ${err}`,
+                content: `캐릭터연동초기화 실패: ${err}`,
                 ephemeral: true
             });
         }

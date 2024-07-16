@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
 const logger = require('../../logger.js');
-const { API_KEY } = require('../../config.json');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
 
 module.exports = {
@@ -18,15 +17,15 @@ module.exports = {
     },
     
     async execute(interaction) {
-        const playerName = interaction.options.getString("캐릭터닉네임");
-        const subPlayerName = interaction.options.getString("부캐릭터닉네임");
-
-        let playerNameList = [playerName];
-        if (subPlayerName) {
-          playerNameList.push(subPlayerName);
-        }
-
         try {
+            const playerName = interaction.options.getString("캐릭터닉네임");
+            const subPlayerName = interaction.options.getString("부캐릭터닉네임");
+
+            let playerNameList = [playerName];
+            if (subPlayerName) {
+            playerNameList.push(subPlayerName);
+        }   
+
             await loabot_db.syncCharacter(interaction.user.username, playerNameList);
             await interaction.reply({
                 content: "캐릭터 연동 완료!",
@@ -34,9 +33,9 @@ module.exports = {
             });
         } catch (err) {
             logger.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
-            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
             await interaction.reply({
-                content: `캐릭터 연동 실패: ${err}`,
+                content: `캐릭터연동 실패: ${err}`,
                 ephemeral: true
             });
         }

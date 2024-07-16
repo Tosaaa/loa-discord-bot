@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
-const fs = require('fs');
 const loabot_db = require('../../functions/loabot_db/db_sql.js');
+const logger = require('../../logger.js');
 
 module.exports = {
     data: async () => {
@@ -10,28 +10,27 @@ module.exports = {
     },
     
     async execute(interaction) {
-
-        const confirm = new ButtonBuilder()
-			.setCustomId('네')
-			.setLabel('초기화')
-			.setStyle(ButtonStyle.Danger);
-
-		const cancel = new ButtonBuilder()
-			.setCustomId('아니요')
-			.setLabel('취소')
-			.setStyle(ButtonStyle.Secondary);
-
-		const row = new ActionRowBuilder()
-			.addComponents(cancel, confirm);
-
-		const response = await interaction.reply({
-			content: `정말 레이드 현황을 초기화 하시겠습니까?`,
-			components: [row]
-		});
-
-        const collectorFilter = i => i.user.id === interaction.user.id;
-
         try {
+            const confirm = new ButtonBuilder()
+                .setCustomId('네')
+                .setLabel('초기화')
+                .setStyle(ButtonStyle.Danger);
+
+            const cancel = new ButtonBuilder()
+                .setCustomId('아니요')
+                .setLabel('취소')
+                .setStyle(ButtonStyle.Secondary);
+
+            const row = new ActionRowBuilder()
+                .addComponents(cancel, confirm);
+
+            const response = await interaction.reply({
+                content: `정말 레이드 현황을 초기화 하시겠습니까?`,
+                components: [row]
+            });
+
+            const collectorFilter = i => i.user.id === interaction.user.id;
+
             const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
             if (confirmation.customId === '네') {
                 await loabot_db.resetRaidParticipant();
@@ -42,9 +41,9 @@ module.exports = {
                 return;
             }
         } catch (err) {
-            interaction.client.writeLog(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
-            console.log(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
-            await interaction.editReply({ content: '입력 시간 초과 (1분) 또는 에러 발생', components: [] });
+            logger.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            console.error(`${interaction.commandName}, ${interaction.user.username}: ${err}`);
+            await interaction.editReply({ content: `레이드초기화 실패: ${err}`, components: [] });
         }
     },
 }

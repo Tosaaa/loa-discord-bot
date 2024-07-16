@@ -103,18 +103,18 @@ module.exports = function () {
                     data = (await _do_query(con, `SELECT character_id, discord_id FROM characters WHERE character_name = ?`, [main_character_name]))[0];
                     let _character_id = data?.character_id;
                     let _discord_id = data?.discord_id;
-                    if (_discord_id &&_discord_id !== discord_id) {
+                    if (_discord_id && _discord_id !== discord_id) {
                         throw new Error(`해당 캐릭터는 ${_discord_id}이/가 사용 중입니다.`);
                     } else {
                         let main_character_id = _character_id;
                         await _do_query(con, `INSERT IGNORE INTO main_characters (discord_id, character_id) VALUE (?, ?)`, [discord_id, main_character_id]);
                     }
                 }
-                await _do_query(con, "COMMIT");
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
-                await _do_query(con, "ROLLBACK");
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -125,10 +125,11 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 // 1. 유저 있나 확인
                 let data = await _do_query(con, `SELECT discord_id FROM users WHERE discord_id = ?`, [discord_id]);
                 if (!data.length) {
-                    reject("연동된 캐릭터가 없습니다.");
+                    throw new Error("연동된 캐릭터가 없습니다.");
                 } else {
                     let data = (await _do_query(con, `SELECT character_id FROM characters WHERE discord_id = ?`, [discord_id]));
                     for (const row of data) {
@@ -138,9 +139,11 @@ module.exports = function () {
                     await _do_query(con, `DELETE FROM characters WHERE discord_id = ?`, [discord_id]);
                     await _do_query(con, `DELETE FROM users WHERE discord_id = ?`, [discord_id]); // 근데 굳이 유저까지 지워야 할까?
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -156,12 +159,15 @@ module.exports = function () {
                 for (const character of data) {
                     let character_name = character.character_name;
                     let class_name = (await _do_query(con, `SELECT class_name FROM classes WHERE class_id = ?`, [character.class_id]))[0]?.class_name;
+                    if (!class_name) throw new Error("클래스 조회 불가");
                     let item_level = character.item_level;
                     res.push([character_name, class_name, item_level]);
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve(res);
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -172,8 +178,11 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {   
+                await _do_query(con, `START TRANSACTION`);
                 let character_id = (await _do_query(con, `SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                if (!character_id) throw new Error(`캐릭터 조회 불가: ${character_name}`);
                 let raid_id = (await _do_query(con, `SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                if (!raid_id) throw new Error(`레이드 조회 불가: ${raid_name}`);
                 let status = (await _do_query(con, `SELECT status FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]))[0]?.status;
                 if (status === "완료") {                        
                     await _do_query(con, `UPDATE raid_participation SET status = '참여' WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
@@ -182,9 +191,11 @@ module.exports = function () {
                 } else {
                     await _do_query(con, `INSERT INTO raid_participation VALUE (?, ?, '참여')`, [character_id, raid_id]);
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -195,17 +206,22 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let character_id = (await _do_query(con, `SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                if (!character_id) throw new Error(`캐릭터 조회 불가: ${character_name}`);
                 let raid_id = (await _do_query(con, `SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                if (!raid_id) throw new Error(`레이드 조회 불가: ${raid_name}`);
                 let status = (await _do_query(con, `SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
                 if (status === "참여") {                        
                     await _do_query(con, `UPDATE raid_participation SET status = '완료' WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
                 } else {
                     // status가 참여가 아닌데 이 함수를 요청하는 상황. 일단 아무 것도 안함.
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -216,17 +232,22 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let character_id = (await _do_query(con, `SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                if (!character_id) throw new Error(`캐릭터 조회 불가: ${character_name}`);
                 let raid_id = (await _do_query(con, `SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                if (!raid_id) throw new Error(`레이드 조회 불가: ${raid_name}`);
                 let status = (await _do_query(con, `SELECT status FROM raid_participation WHERE character_id = ?`, [character_id]))[0]?.status;
                 if (status) {      
                     await _do_query(con, `DELETE FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]);
                 } else {
                     // do nothing
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -237,13 +258,16 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let characterList = await getCharacters(discord_id);
                 for (const character of characterList) {
                     await deleteRaidParticipant(character[0], raid_name);
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -254,12 +278,17 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let character_id = (await _do_query(con, `SELECT character_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.character_id;
+                if (!character_id) throw new Error(`캐릭터 조회 불가: ${character_name}`);
                 let raid_id = (await _do_query(con, `SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                if (!raid_id) throw new Error(`레이드 조회 불가: ${raid_name}`);
                 let status = (await _do_query(con, `SELECT status FROM raid_participation WHERE character_id = ? AND raid_id = ?`, [character_id, raid_id]))[0]?.status;
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve(status === "참여");
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -270,7 +299,9 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let raid_id = (await _do_query(con, `SELECT raid_id FROM raids WHERE raid_name = ?`, [raid_name]))[0]?.raid_id;
+                if (!raid_id) throw new Error(`레이드 조회 불가: ${raid_name}`);
                 let character_ids = (await _do_query(con, `SELECT character_id FROM raid_participation WHERE raid_id = ? AND status = '참여'`, [raid_id]));
                 let res = {};
                 for (const character_id of character_ids) {
@@ -283,9 +314,11 @@ module.exports = function () {
                     else 
                         res[discord_id].push(character_name);
                 }
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve(res);
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -296,10 +329,13 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 await _do_query(con, `TRUNCATE TABLE raid_participation`);
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve();
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -310,10 +346,13 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let raidList = await _do_query(con, `SELECT raid_name, max_participants, required_item_level FROM raids ORDER BY required_item_level`);
+                await _do_query(con, `COMMIT`);
                 _release_con(con);
                 resolve(raidList);
             } catch (err) {
+                await _do_query(con, `ROLLBACK`);
                 _release_con(con);
                 reject(err);
             }
@@ -324,8 +363,11 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let class_id = (await _do_query(con, `SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
+                if (!class_id) throw new Error("클래스 조회 불가");
                 let is_support = (await _do_query(con, `SELECT is_support FROM classes WHERE class_id = ?`, [class_id]))[0]?.is_support;
+                if (!is_support) throw new Error("서포터 여부 조회 불가");
                 _release_con(con);
                 resolve(is_support);
             } catch (err) {
@@ -339,20 +381,24 @@ module.exports = function () {
         return new Promise(async (resolve, reject) => {
             const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
                 let data = await _do_query(con, `SELECT * FROM users`);
                 for (const row of data) {
                     let character_ids = (await _do_query(con, `SELECT character_id FROM main_characters WHERE discord_id = ?`, [row.discord_id]));
                     let playerNameList = [];
                     for (const row2 of character_ids) {
                         let character_name = (await _do_query(con, `SELECT character_name FROM characters WHERE character_id = ?`, [row2.character_id]))[0]?.character_name;
+                        if (!character_name) throw new Error(`캐릭터 이름 조회 불가`);
                         playerNameList.push(character_name);
                     }
                     await syncCharacter(row.discord_id, playerNameList);
                 }
-                // _release_con(con);
+                await _do_query(con, `COMMIT`);
+                _release_con(con);
                 resolve();
             } catch (err) {
-                // _release_con(con);
+                await _do_query(con, `ROLLBACK`);
+                _release_con(con);
                 reject(err);
             }
         });
@@ -360,9 +406,17 @@ module.exports = function () {
 
     __TEMPLATE = () => {
         return new Promise(async (resolve, reject) => {
+            const con = await _get_con();
             try {
+                await _do_query(con, `START TRANSACTION`);
+                // Do Query
+                await _do_query(con, `COMMIT`);
+                _release_con(con);
                 resolve();
             } catch (err) {
+                // Error Handling
+                await _do_query(con, `ROLLBACK`);
+                _release_con(con);
                 reject(err);
             }
         });
