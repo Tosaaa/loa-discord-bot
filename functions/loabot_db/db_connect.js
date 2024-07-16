@@ -6,7 +6,8 @@ module.exports = function () {
     host: db.host,
     user: db.user,
     password: token, // DISCORD_TOKEN
-    database: db.database
+    database: db.database,
+    connectionLimit: 10 // default
   });
 
   return {
