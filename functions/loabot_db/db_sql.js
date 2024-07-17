@@ -213,7 +213,7 @@ module.exports = function () {
         });
     };
 
-    funcs.isSupport = (discord_id) => {
+    funcs.isSupport = (character_name) => {
         return executeQuery(async (con) => {
             let class_id = (await _do_query(con, `SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
             if (!class_id) throw new Error("클래스 조회 불가");
