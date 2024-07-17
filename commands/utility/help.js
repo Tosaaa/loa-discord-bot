@@ -11,12 +11,12 @@ module.exports = {
         const client = interaction.client;
 
         let result = `[로아봇 사용법]\n`;
-
-        [...client.commands].forEach(([commandKey, commandValue])=> {
-            if (commandValue.data.description.includes("개발자용")) return;
+        for (const [commandKey, commandValue] of [...client.commands]) {
+            let command = await commandValue.data();
+            if (command.description.includes("개발자용")) return;
             result += `/**${commandKey}**\n`;
-            result += ` : ${commandValue.data.description}\n`;
-        });
+            result += ` : ${command.description}\n`;
+        }
 
         await interaction.reply({
             content: result,

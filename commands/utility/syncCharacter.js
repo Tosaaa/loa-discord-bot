@@ -6,7 +6,7 @@ module.exports = {
     data: async () => {
         return new SlashCommandBuilder()
         .setName('캐릭터연동')
-        .setDescription('본인 캐릭터 연동 (부계정 있으면 둘 다 입력)')
+        .setDescription('본인 캐릭터 연동 (여러 번 연동 가능)')
         .addStringOption(option => 
             option.setName("캐릭터닉네임")
                 .setDescription("캐릭터 닉네임")
