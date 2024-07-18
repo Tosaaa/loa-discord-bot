@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const logger = require('./logger.js');
-const mysql = require('mysql');
+const mariadb = require('mariadb');
 const loabot_db = require('./functions/loabot_db/db_sql.js');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');

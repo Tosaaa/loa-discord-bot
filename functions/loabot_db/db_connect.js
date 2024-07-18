@@ -1,8 +1,8 @@
-const mysql = require('mysql');
+const mariadb = require('mariadb');
 const {db, token} = require('../../config.json')
 
 module.exports = function () {
-  const pool = mysql.createPool({
+  const pool = mariadb.createPool({
     host: db.host,
     user: db.user,
     password: token, // DISCORD_TOKEN
