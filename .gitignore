@@ -3,3 +3,5 @@ config.json
 DB
 logs
 events/ready.js
+package.json
+package-lock.json
