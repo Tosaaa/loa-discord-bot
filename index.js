@@ -4,7 +4,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const logger = require('./logger.js');
-const mariadb = require('mariadb');
 const loabot_db = require('./functions/loabot_db/db_sql.js');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
@@ -59,7 +58,7 @@ client.commands = new Collection();
 	client.on('debug', (log) => {
 		logger.info(log);
 	});
-
+	
 	// Log in to Discord with your client's token
 	client.login(token);
 })();
@@ -110,10 +109,5 @@ function initScheculeHandler(client) {
 	const { getScheduleJob, doResetRaid, doUpdateAllCharacters } = require('./functions/scheduleHandler.js');
 	client.resetRaidScheduler = getScheduleJob('0 0 6 * * 3', doResetRaid.bind(client));
 	client.updateAllCharacters = getScheduleJob('0 0 0 * * *', doUpdateAllCharacters);
-
-	// github codespace: hour -= 9
-	// const timeZoneOffset = (new Date()).getTimezoneOffset() / 60;
-	// client.resetRaidScheduler = getScheduleJob(`0 0 21 * * 2`, doResetRaid.bind(client));
-	// client.updateAllCharactersScheduler = getScheduleJob(`0 0 15 * * *`, doUpdateAllCharacters);
 }
 /********** functions **********/
