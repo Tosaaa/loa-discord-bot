@@ -1,4 +1,4 @@
-const mariadb = require('mariadb');
+const mariadb = require('mariadb/callback');
 const {db, token} = require('../../config.json')
 
 module.exports = function () {
