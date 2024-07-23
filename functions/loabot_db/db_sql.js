@@ -218,7 +218,7 @@ module.exports = function () {
             let class_id = (await _do_query(con, `SELECT class_id FROM characters WHERE character_name = ?`, [character_name]))[0]?.class_id;
             if (!class_id) throw new Error("클래스 조회 불가");
             let is_support = (await _do_query(con, `SELECT is_support FROM classes WHERE class_id = ?`, [class_id]))[0]?.is_support;
-            if (!is_support) throw new Error("서포터 여부 조회 불가");
+            if (is_support === undefined) throw new Error("서포터 여부 조회 불가");
             return is_support;
         });
     };
