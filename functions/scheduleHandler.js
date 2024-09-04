@@ -14,8 +14,8 @@ module.exports = {
 
             await loabot_db.resetRaidParticipant();
             await client.initRole();
-            const channel = client.channels.cache.get(channelId);
-            await channel.send(`레이드 초기화 완료!`);
+            // const channel = client.channels.cache.get(channelId);
+            // await channel.send(`레이드 초기화 완료!`);
         } catch (err) {
             logger.error(err);
             console.error(err);
