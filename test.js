@@ -21,33 +21,33 @@ async function fetchJewelry() {
           'Content-Type': 'application/json'
         },
         'body': `{
-            "ItemLevelMin": 0,
-            "ItemLevelMax": 0,
-            "ItemGradeQuality": null,
-            "SkillOptions": [
+            'ItemLevelMin': 0,
+            'ItemLevelMax': 0,
+            'ItemGradeQuality': null,
+            'SkillOptions': [
               {
-                "FirstOption": 25200,
-                "SecondOption": null,
-                "MinValue": null,
-                "MaxValue": null
+                'FirstOption': 25200,
+                'SecondOption': null,
+                'MinValue': null,
+                'MaxValue': null
               }
             ],
-            "EtcOptions": [
+            'EtcOptions': [
               {
-                "FirstOption": null,
-                "SecondOption": null,
-                "MinValue": null,
-                "MaxValue": null
+                'FirstOption': null,
+                'SecondOption': null,
+                'MinValue': null,
+                'MaxValue': null
               }
             ],
-            "Sort": "BIDSTART_PRICE",
-            "CategoryCode": 210000,
-            "CharacterClass": "블레이드",
-            "ItemTier": null,
-            "ItemGrade": null,
-            "ItemName": "10레벨 멸화의 보석",
-            "PageNo": 0,
-            "SortCondition": "ASC"
+            'Sort': 'BIDSTART_PRICE',
+            'CategoryCode': 210000,
+            'CharacterClass': '블레이드',
+            'ItemTier': null,
+            'ItemGrade': null,
+            'ItemName': '10레벨 멸화의 보석',
+            'PageNo': 0,
+            'SortCondition': 'ASC'
           }`
     }
     const res = await fetch(`https://developer-lostark.game.onstove.com/auctions/items`, options);

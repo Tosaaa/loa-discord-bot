@@ -27,7 +27,7 @@ module.exports = {
         const equalValue = (auctionValue * 0.95) * (divider-1) / divider;
         const preemptionValue = equalValue / 1.1;
 
-        const res = `공평: ${equalValue.toFixed(2)} \n선점: ${preemptionValue.toFixed(2)}`;
+        const res = `경매가 ${auctionValue}, ${divider}인 기준 \n공평: ${equalValue.toFixed(2)} \n선점: ${preemptionValue.toFixed(2)}`;
 
         const response = await interaction.reply({
             content: res
