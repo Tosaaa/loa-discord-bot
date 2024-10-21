@@ -58,7 +58,7 @@ module.exports = {
     async createEmbedByRaidName(interaction, raid_name) {
         const client = interaction.client;
         const embed = {}
-        embed.color = interaction.guild.roles.cache.find(r => r.name === raid_name).color;
+        embed.color = interaction.guild.roles.cache.find(r => r.name === raid_name)?.color;
         embed.title = raid_name;
         embed.fields = [];
 
