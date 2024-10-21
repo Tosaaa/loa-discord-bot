@@ -53,7 +53,6 @@ module.exports = {
                     new StringSelectMenuOptionBuilder()
                     .setLabel(character[0]+"/"+character[1]+"/"+character[2])
                     .setValue(JSON.stringify(character))
-                    .setEmoji(interaction.client.getEmoji(character[1]))
                     .setDefault(await loabot_db.isRaidParticipant(character[0], selectedRaid.raid_name))
                 );
             }

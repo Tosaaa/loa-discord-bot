@@ -7,7 +7,6 @@ const logger = require('./logger.js');
 const loabot_db = require('./functions/loabot_db/db_sql.js');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token, guildId, channelId, channelIdLaboratory, channelIdRaidSelection, API_KEY} = require('./config.json');
-const { emoji } = require('./DB/emoji.json');
 
 // Create a new client instance
 const client = new Client({ 
@@ -76,15 +75,6 @@ client.init = async () => {
 		console.error(err);
 		process.exit();
 	}
-}
-
-client.getEmoji = (emojiName) => {
-	let emojiString = emoji[emojiName];
-	if (!emojiString) {
-		// if there's no matching emoji, return crycon
-		return "1131567145030004750";
-	}
-	return emojiString;
 }
 
 function initHandler(client) {
